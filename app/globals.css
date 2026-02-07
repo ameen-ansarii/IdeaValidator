@@ -1,0 +1,181 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  /* Linear / Cluely Palette */
+  --background: #000000;
+  --foreground: #ffffff;
+
+  --card-bg: #0a0a0a;
+  --card-border: rgba(255, 255, 255, 0.08);
+  --card-highlight: rgba(255, 255, 255, 0.05);
+
+  --text-secondary: #a1a1aa;
+  /* Zinc 400 */
+  --primary-accent: #5e6ad2;
+  /* Subtle Indigo */
+}
+
+body {
+  color: var(--foreground);
+  background: var(--background);
+  font-family: var(--font-inter), -apple-system, BlinkMacSystemFont, "SF Pro Display", "Inter", sans-serif;
+  overflow-x: hidden;
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* --- Ambient Lighting (Subtle) --- */
+.bg-aurora {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: -1;
+  background:
+    radial-gradient(circle at 50% 0%, rgba(120, 119, 198, 0.1) 0%, transparent 40%),
+    radial-gradient(circle at 80% 10%, rgba(255, 255, 255, 0.03) 0%, transparent 20%);
+  pointer-events: none;
+}
+
+/* --- Linear Style Card --- */
+.macos-card {
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: 12px;
+  /* Tighter radius */
+  box-shadow:
+    0 0 0 1px rgba(0, 0, 0, 1),
+    /* Black edge */
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.05);
+  /* Top Highlight */
+  transition: transform 0.2s ease, border-color 0.2s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.macos-card:hover {
+  border-color: rgba(255, 255, 255, 0.15);
+  transform: translateY(-2px);
+}
+
+/* --- Clean Modern Button --- */
+.liquid-button {
+  background: #ffffff;
+  color: #000000;
+  border-radius: 8px;
+  /* Slightly squared */
+  font-weight: 500;
+  font-size: 0.95rem;
+  padding: 0.75rem 1.5rem;
+  transition: all 0.2s ease;
+  border: 1px solid transparent;
+  box-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.1),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.1);
+  /* Subtle inner ring */
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+}
+
+.liquid-button:hover {
+  background: #f0f0f0;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(255, 255, 255, 0.1);
+}
+
+.liquid-button:active {
+  transform: translateY(0);
+  background: #e5e5e5;
+}
+
+/* Secondary Button Variant */
+.liquid-button.secondary {
+  background: rgba(255, 255, 255, 0.05);
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.liquid-button.secondary:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.2);
+  box-shadow: none;
+}
+
+/* --- Inputs --- */
+.macos-input {
+  background: #0e0e0e;
+  border: 1px solid var(--card-border);
+  border-radius: 8px;
+  color: white;
+  padding: 0.75rem 1rem;
+  outline: none;
+  transition: all 0.15s ease;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.macos-input:focus {
+  border-color: rgba(255, 255, 255, 0.3);
+  background: #121212;
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.1);
+}
+
+/* --- Typography Utilities --- */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  letter-spacing: -0.02em;
+  /* Tight tracking for headings */
+  font-weight: 600;
+}
+
+p {
+  color: var(--text-secondary);
+  line-height: 1.6;
+}
+
+.text-gradient {
+  background: linear-gradient(to bottom right, #ffffff, #a1a1aa);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* --- Scrollbar --- */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #000;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #333;
+  border-radius: 4px;
+  border: 2px solid #000;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+
+/* --- Utilities --- */
+.border-b-subtle {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
