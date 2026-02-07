@@ -1,7 +1,7 @@
 "use server";
 
 import Groq from "groq-sdk";
-import { ValidationReport } from "./types";
+import { ValidationReport, TechStack, PivotStrategy } from "./types";
 
 // Groq Configuration - Super fast and generous free tier!
 const MODEL_NAME = "llama-3.3-70b-versatile";
@@ -46,7 +46,10 @@ You MUST respond with ONLY a valid JSON object matching this exact schema:
   "confidenceScore": "string (1-10)",
   "confidenceJustification": "string",
   "whyItFails": "string",
-  "whoShouldNotBuild": "string"
+  "whyItFails": "string",
+  "whoShouldNotBuild": "string",
+  "marketTrends": "string (Specific 2024-25 market shifts relevant to this)",
+  "sources": ["string (e.g. 'Y Combinator RFS 2024', 'Gartner AI Hype Cycle', 'Statista SaaS Trends')"]
 }`;
 
     if (mode === 'roast') {
@@ -85,6 +88,9 @@ You MUST respond with ONLY a valid JSON object matching this exact schema:
     "humorousAnalogy": "Analogy (e.g., 'Like Uber but for people who hate themselves')",
     "burn": "Savage one-liner (under 15 words)"
   }
+  },
+  "marketTrends": "string (The current wave this is missing or riding)",
+  "sources": ["string (Real trends/articles to back this up)"]
 }`;
     }
 
@@ -124,33 +130,43 @@ You MUST respond with ONLY a valid JSON object matching this exact schema:
     }
 }
 
-export async function pivotIdea(originalIdea: string): Promise<string> {
+export async function pivotIdea(originalIdea: string): Promise<PivotStrategy> {
     const client = getGroq();
 
-    const systemPrompt = `You are a genius startup pivot machine.
-Your goal is to take a weak or common idea and "pivot" it into something 10x better, deeper, or more niche.
+    const systemPrompt = `You are a world-class startup strategist known for turning failed ideas into unicorns (like Slack from Glitch, or Twitter from Odeo).
+Your goal is to "pivot" a given idea into a significantly better, high-growth direction based on 2025 market trends.
 
 Rules:
-- Keep the core valid connection (same industry or problem).
-- Change the mechanism, business model, or target audience to make it viable.
-- Output ONLY the new idea text. 2 sentences max.
-- Be creative and specific.`;
+1. Retain the core industry or insight but change the execution/model.
+2. Focus on high-value problems (B2B Saas, AI Agents, Marketplace liquidity).
+3. The new idea must be "investible" and scalable.
+
+You MUST respond with ONLY a valid JSON object:
+{
+  "originalConcept": "Short summary of the bad idea",
+  "pivotConcept": "The new, better idea (2 lines max)",
+  "whyItWorks": "Why this new angle wins in the current market",
+  "targetAudienceShift": "How the customer changes (e.g. 'From Teens to Enterprise HR')",
+  "complexityScore": "Low/Medium/High"
+}`;
 
     try {
         const completion = await client.chat.completions.create({
             model: MODEL_NAME,
             messages: [
                 { role: "system", content: systemPrompt },
-                { role: "user", content: `Pivot this idea into a unicorn startup concept: "${originalIdea}"` }
+                { role: "user", content: `Pivot this idea: "${originalIdea}"` }
             ],
-            temperature: 0.9,
-            max_tokens: 200,
+            temperature: 0.8,
+            max_tokens: 500,
         });
 
-        return completion.choices[0]?.message?.content || "Could not generate pivot. Please try again.";
+        const response = completion.choices[0]?.message?.content || "";
+        const clean = response.replace(/```json\n?|\n?```/g, "").trim();
+        return JSON.parse(clean);
     } catch (error: any) {
         console.error("Pivot Error:", error);
-        return "Could not generate pivot. Please try again.";
+        throw new Error("Failed to generate pivot.");
     }
 }
 
@@ -371,3 +387,40 @@ export async function generateBrandVibe(idea: string): Promise<{ colors: string[
     }
 }
 
+
+export async function recommendTechStack(idea: string): Promise<TechStack> {
+    const client = getGroq();
+
+    const systemPrompt = `You are a Senior CTO and Software Architect.
+Recommend the best technology stack for this startup idea, focusing on speed to market (MVP) and scalability.
+
+You MUST respond with ONLY a valid JSON object in this exact format:
+{
+  "frontend": "e.g. Next.js, React Native, Flutter",
+  "backend": "e.g. Node.js, Supabase, Firebase, Go",
+  "database": "e.g. PostgreSQL, MongoDB, Redis",
+  "infrastructure": "e.g. Vercel, AWS, Google Cloud",
+  "tools": ["Tool 1", "Tool 2", "Tool 3"],
+  "justification": "Brief explanation of why this stack is best for this specific idea."
+}`;
+
+    try {
+        const completion = await client.chat.completions.create({
+            model: MODEL_NAME,
+            messages: [
+                { role: "system", content: systemPrompt },
+                { role: "user", content: `Recommend tech stack for: "${idea}"` }
+            ],
+            temperature: 0.7,
+            max_tokens: 1000,
+        });
+
+        const response = completion.choices[0]?.message?.content || "";
+        const cleanContent = response.replace(/```json\n?|\n?```/g, "").trim();
+
+        return JSON.parse(cleanContent);
+    } catch (error: any) {
+        console.error("Tech Stack Error:", error);
+        throw new Error("Failed to recommend tech stack.");
+    }
+}

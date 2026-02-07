@@ -23,6 +23,9 @@ export interface ValidationReport {
         humorousAnalogy: string;
         burn: string;
     };
+    whatToBuildNext?: string; // Pivot suggestion preview
+    marketTrends?: string; // "Current 2024-25 trend analysis"
+    sources?: string[]; // "List of verifiable sources/patterns"
 }
 
 export interface CompetitiveAnalysis {
@@ -60,4 +63,21 @@ export interface EnhancedRoadmap {
     teamSize: number;
     skillsRequired: string[];
     keyMilestones: string[];
+}
+
+export interface TechStack {
+    frontend: string;
+    backend: string;
+    database: string;
+    infrastructure: string;
+    tools: string[];
+    justification: string;
+}
+
+export interface PivotStrategy {
+    originalConcept: string;
+    pivotConcept: string;
+    whyItWorks: string;
+    targetAudienceShift: string;
+    complexityScore: "Low" | "Medium" | "High";
 }

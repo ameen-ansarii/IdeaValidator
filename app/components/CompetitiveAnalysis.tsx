@@ -13,7 +13,7 @@ export default function CompetitiveAnalysis({ data }: CompetitiveAnalysisProps) 
         <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="macos-card p-8 mt-6"
+            className="macos-card p-6 md:p-8 mt-6"
         >
             <div className="flex items-center gap-4 mb-8">
                 <div className="w-12 h-12 rounded-xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center">
