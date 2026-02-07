@@ -179,3 +179,9 @@ p {
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
+
+/* Vertical Mask Gradient */
+.mask-gradient-vertical {
+  mask-image: linear-gradient(to bottom, transparent, black 10%, black 90%, transparent);
+  -webkit-mask-image: linear-gradient(to bottom, transparent, black 10%, black 90%, transparent);
+}

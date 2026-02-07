@@ -48,8 +48,8 @@ You MUST respond with ONLY a valid JSON object matching this exact schema:
   "whyItFails": "string",
   "whyItFails": "string",
   "whoShouldNotBuild": "string",
-  "marketTrends": "string (Specific 2024-25 market shifts relevant to this)",
-  "sources": ["string (e.g. 'Y Combinator RFS 2024', 'Gartner AI Hype Cycle', 'Statista SaaS Trends')"]
+  "marketTrends": "string (Specific 2025-26 market shifts relevant to this)",
+  "sources": ["string (Specific Trusted Sites with URLs if possible, e.g. 'TechCrunch: AI Trends 2025', 'Gartner: GenAI Report', 'Y Combinator RFS')"]
 }`;
 
     if (mode === 'roast') {
@@ -89,8 +89,8 @@ You MUST respond with ONLY a valid JSON object matching this exact schema:
     "burn": "Savage one-liner (under 15 words)"
   }
   },
-  "marketTrends": "string (The current wave this is missing or riding)",
-  "sources": ["string (Real trends/articles to back this up)"]
+  "marketTrends": "string (The current 2025-26 wave this is missing or riding)",
+  "sources": ["string (Real 2025 trends/articles/URLs to back this up)"]
 }`;
     }
 

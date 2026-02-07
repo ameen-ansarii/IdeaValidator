@@ -20,6 +20,7 @@ import RoastCard from "./components/RoastCard";
 import BrandVibe from "./components/BrandVibe";
 import TechStackDisplay from "./components/TechStackDisplay";
 import CircularGauge from "./components/CircularGauge";
+import FloatingPivotStories from "./components/FloatingPivotStories";
 import { generatePDF } from "./utils/generatePDF";
 
 function HomeContent() {
@@ -199,6 +200,10 @@ function HomeContent() {
       <Dock />
 
       <div className="bg-aurora" />
+
+      {!report && !isAnalyzing && (
+        <FloatingPivotStories />
+      )}
 
       <div className="max-w-6xl w-full z-10 transition-all duration-700 ease-[0.16,1,0.3,1] flex flex-col items-center">
 
@@ -594,18 +599,29 @@ function HomeContent() {
                   <div className="min-w-[4px] h-full rounded-full bg-blue-500/40" />
                   <div>
                     <h5 className="text-[10px] uppercase font-bold text-blue-300 mb-1">Source Transparency</h5>
-                    <p className="text-[11px] text-gray-400 leading-tight">
+                    <div className="text-[11px] text-gray-400 leading-tight">
                       {report.marketTrends ? (
                         <>
-                          <span className="text-gray-300 block mb-1">Market Context: {report.marketTrends}</span>
+                          <span className="text-gray-300 block mb-2 font-medium">Market Context (2025-26): {report.marketTrends}</span>
+
                           {report.sources && report.sources.length > 0 && (
-                            <span className="block text-gray-500 italic">Sources: {report.sources.join(", ")}</span>
+                            <div className="mt-2 pt-2 border-t border-blue-500/20">
+                              <span className="text-[10px] uppercase font-bold text-blue-300 block mb-1.5 opacity-80">Trusted Verification Sources</span>
+                              <div className="flex flex-col gap-1.5">
+                                {report.sources.map((source, idx) => (
+                                  <div key={idx} className="flex items-center gap-1.5 text-blue-200/90 hover:text-blue-100 transition-colors">
+                                    <span className="w-1 h-1 rounded-full bg-blue-400 flex-shrink-0" />
+                                    <span className="truncate">{source}</span>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
                           )}
                         </>
                       ) : (
-                        "This analysis is verified against real-time patterns from millions of startup case studies, current market trends (2024-25), and established business frameworks (Lean Startup)."
+                        "This analysis is verified against real-time patterns from millions of startup case studies, current market trends (2025-26), and established business frameworks (Lean Startup)."
                       )}
-                    </p>
+                    </div>
                   </div>
                 </div>
               </div>
