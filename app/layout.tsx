@@ -6,6 +6,7 @@ import { AuthProvider } from "./context/AuthContext";
 import { SubscriptionProvider } from "./context/SubscriptionContext";
 import NavBar from "./components/NavBar";
 import ThemeToggle from "./components/ThemeToggle";
+import UserAuth from "./components/UserAuth";
 
 const outfit = Outfit({
   subsets: ["latin"],
@@ -32,6 +33,7 @@ export default function RootLayout({
               {/* Global Navigation - appears on all pages */}
               <NavBar />
               <ThemeToggle />
+              <UserAuth />
               {/* Page Content */}
               {children}
             </SubscriptionProvider>

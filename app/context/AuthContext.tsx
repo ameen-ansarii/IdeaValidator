@@ -5,6 +5,9 @@ import {
     User,
     GoogleAuthProvider,
     signInWithPopup,
+    createUserWithEmailAndPassword,
+    signInWithEmailAndPassword,
+    updateProfile,
     signOut as firebaseSignOut,
     onAuthStateChanged
 } from "firebase/auth";
@@ -28,6 +31,8 @@ interface AuthContextType {
     userData: UserData | null;
     loading: boolean;
     signInWithGoogle: () => Promise<void>;
+    signInWithEmail: (email: string, pass: string) => Promise<void>;
+    signUpWithEmail: (email: string, pass: string, name: string) => Promise<void>;
     signOut: () => Promise<void>;
     isPro: boolean;
 }
@@ -37,6 +42,8 @@ const AuthContext = createContext<AuthContextType>({
     userData: null,
     loading: true,
     signInWithGoogle: async () => { },
+    signInWithEmail: async () => { },
+    signUpWithEmail: async () => { },
     signOut: async () => { },
     isPro: false,
 });
@@ -86,6 +93,31 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             await signInWithPopup(auth, provider);
         } catch (error) {
             console.error("Error signing in with Google", error);
+            throw error;
+        }
+    };
+
+    const signInWithEmail = async (email: string, pass: string) => {
+        try {
+            await signInWithEmailAndPassword(auth, email, pass);
+        } catch (error) {
+            console.error("Error signing in", error);
+            throw error;
+        }
+    };
+
+    const signUpWithEmail = async (email: string, pass: string, name: string) => {
+        try {
+            const userCredential = await createUserWithEmailAndPassword(auth, email, pass);
+            // Update display name immediately
+            if (auth.currentUser) {
+                await updateProfile(auth.currentUser, { displayName: name });
+                // Force update state to reflect name change
+                setUser({ ...userCredential.user, displayName: name });
+            }
+        } catch (error) {
+            console.error("Error signing up", error);
+            throw error;
         }
     };
 
