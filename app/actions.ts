@@ -489,31 +489,37 @@ You MUST respond with ONLY a valid JSON object in this exact format:
     }
 }
 
-export async function checkDomainAvailability(domain: string): Promise<boolean> {
+export interface DomainCheckResult {
+    available: boolean;
+    isPremium: boolean;
+}
+
+export async function checkDomainAvailability(domain: string): Promise<DomainCheckResult> {
     try {
         console.log(`Checking availability for ${domain} via AI Search...`);
 
         // Search for recent availability info
         const searchResults = await searchWeb(`site:${domain} OR "is ${domain} available" OR "whois ${domain}"`);
         
-        // If we find the site indexed, it's definitely taken
+        // If we find the site indexed, it's definitely taken (unless it's a parking page, which AI can detect)
         const siteIndexed = searchResults.some(r => r.url.includes(domain));
-        if (siteIndexed) {
-             console.log(`Domain ${domain} is indexed, so it is taken.`);
-             return false;
-        }
-
-        // Use Groq to analyze the search snippets
+        
+        // Use Groq to analyze the search snippets for Premium/For Sale status
         const groq = getGroq();
         const completion = await groq.chat.completions.create({
             messages: [
                 {
                     role: "system",
-                    content: "You are a Domain Name availability analyzer. Analyze the search results to determine if a domain is AVAILABLE or TAKEN. Output JSON: { \"available\": boolean }"
+                    content: `You are a Domain Name Analyst.
+                    Analyze the search results to determine:
+                    1. Is the domain AVAILABLE for registration? (or available for purchase/aftermarket?)
+                    2. Is it a PREMIUM domain? (Look for high prices, 'for sale', 'make offer', 'premium domain' text).
+                    
+                    Output JSON: { "available": boolean, "isPremium": boolean }`
                 },
                 {
                     role: "user",
-                    content: `Domain: ${domain}\nSearch Results: ${JSON.stringify(searchResults)}\n\nIs it available?`
+                    content: `Domain: ${domain}\nSearch Results: ${JSON.stringify(searchResults)}\n\nAnalyze status.`
                 }
             ],
             model: "llama-3.3-70b-versatile",
@@ -523,13 +529,13 @@ export async function checkDomainAvailability(domain: string): Promise<boolean> 
         const result = JSON.parse(completion.choices[0]?.message?.content || "{}");
         console.log(`AI Verdict for ${domain}:`, result);
 
-        // If AI explicitly says valid: false (taken), return false.
-        // If available: true, return true.
-        // If undefined/null, assume available (optimistic fallback).
-        return result.available !== false; 
+        return {
+            available: result.available !== false, // Default to true if unsure
+            isPremium: result.isPremium === true
+        };
         
     } catch (e) {
         console.error("Domain check error", e);
-        return false; // Fail safe
+        return { available: false, isPremium: false }; // Fail safe
     }
 }

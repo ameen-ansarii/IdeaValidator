@@ -85,8 +85,11 @@ export default function DomainChecker() {
         
         // REAL LOOKUP: Check availability using server action (Whois)
         let isAvailable = false;
+        let isPremium = false;
         try {
-            isAvailable = await checkDomainAvailability(domain);
+            const result = await checkDomainAvailability(domain);
+            isAvailable = result.available;
+            isPremium = result.isPremium;
         } catch (e) {
             console.error(`Availability check failed for ${domain}`, e);
             isAvailable = false;
@@ -100,17 +103,25 @@ export default function DomainChecker() {
         let dealTag = undefined;
 
         if (isAvailable) {
-            // Apply deals logic
-            const hasDeal = Math.random() > 0.4;
-            if (hasDeal) {
-                if (registrar.name === "GoDaddy" && (tld === '.com' || tld === '.in')) {
-                    price = 1; // The classic "1 rupee" deal
-                    originalPrice = pricing.original;
-                    dealTag = "1st Year Deal";
-                } else {
-                    price = pricing.deal;
-                    originalPrice = pricing.original;
-                    dealTag = Math.floor(((originalPrice - price) / originalPrice) * 100) + "% OFF";
+            if (isPremium) {
+                // Premium Logic: Random high-value estimate (since we lack real API)
+                // Price between ₹50k and ₹5 Lakh
+                price = Math.floor(Math.random() * (500000 - 50000) + 50000); 
+                originalPrice = Math.floor(price * 1.2);
+                dealTag = "Premium Domain";
+            } else {
+                // Regular Deals Logic
+                const hasDeal = Math.random() > 0.4;
+                if (hasDeal) {
+                    if (registrar.name === "GoDaddy" && (tld === '.com' || tld === '.in')) {
+                        price = 1; // The classic "1 rupee" deal
+                        originalPrice = pricing.original;
+                        dealTag = "1st Year Deal";
+                    } else {
+                        price = pricing.deal;
+                        originalPrice = pricing.original;
+                        dealTag = Math.floor(((originalPrice - price) / originalPrice) * 100) + "% OFF";
+                    }
                 }
             }
         }
