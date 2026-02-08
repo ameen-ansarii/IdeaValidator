@@ -8,6 +8,7 @@ import { CheckCircle2, AlertTriangle, XCircle, ArrowRight, ShieldCheck } from "l
 import { ValidationReport } from "../types";
 import Dock from "../components/Dock/Dock";
 import clsx from "clsx";
+import BackgroundDots from "../components/BackgroundDots";
 
 function ShareContent() {
     const searchParams = useSearchParams();
@@ -34,7 +35,8 @@ function ShareContent() {
 
     if (error) {
         return (
-            <div className="min-h-screen flex flex-col items-center justify-center p-6 text-center">
+            <BackgroundDots>
+                <div className="min-h-screen flex flex-col items-center justify-center p-6 text-center">
                 <AlertTriangle className="w-16 h-16 text-yellow-500 mb-4" />
                 <h1 className="text-2xl font-bold text-[var(--foreground)] mb-2">Invalid Link</h1>
                 <p className="text-[var(--text-secondary)] mb-6">This analysis link is broken or expired.</p>
@@ -42,21 +44,25 @@ function ShareContent() {
                     Go Home
                 </Link>
             </div>
+            </BackgroundDots>
         );
     }
 
     if (!data) {
         return (
-            <div className="min-h-screen flex items-center justify-center">
-                <div className="w-6 h-6 border-2 border-[var(--text-secondary)] border-t-transparent rounded-full animate-spin" />
-            </div>
+            <BackgroundDots>
+                <div className="min-h-screen flex items-center justify-center">
+                    <div className="w-6 h-6 border-2 border-[var(--text-secondary)] border-t-transparent rounded-full animate-spin" />
+                </div>
+            </BackgroundDots>
         );
     }
 
     const { idea, report } = data;
 
     return (
-        <main className="min-h-screen flex flex-col items-center p-6 pt-24 relative bg-[var(--background)] selection:bg-purple-500/30">
+        <BackgroundDots>
+            <main className="min-h-screen flex flex-col items-center p-6 pt-24 relative bg-[var(--background)] selection:bg-purple-500/30">
             <div className="fixed inset-0 z-0 bg-aurora pointer-events-none opacity-50" />
             <Dock />
 
@@ -128,7 +134,8 @@ function ShareContent() {
                     </Link>
                 </div>
             </motion.div>
-        </main>
+            </main>
+        </BackgroundDots>
     );
 }
 

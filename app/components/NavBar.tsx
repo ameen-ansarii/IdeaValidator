@@ -7,6 +7,7 @@ export default function NavBar() {
     // Menu items - matching your original example
     const menuItems = [
         { label: 'Home', ariaLabel: 'Go to home page', link: '/' },
+        { label: 'Domain Checker', ariaLabel: 'Check domain availability', link: '/domain-checker' },
         { label: 'About', ariaLabel: 'Learn about us', link: '/about' },
         { label: 'History', ariaLabel: 'View history', link: '/history' },
         { label: 'Pricing', ariaLabel: 'View our pricing', link: '/pricing' },

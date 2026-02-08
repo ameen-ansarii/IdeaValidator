@@ -2,10 +2,12 @@
 
 import { motion } from "framer-motion";
 import MaskedText from "../components/MaskedText";
+import BackgroundDots from "../components/BackgroundDots";
 
 export default function LegalPage() {
     return (
-        <main className="min-h-screen flex flex-col items-center p-6 pt-32 relative">
+        <BackgroundDots>
+            <main className="min-h-screen flex flex-col items-center p-6 pt-32 relative">
             {/* NavBar and ThemeToggle are now in layout.tsx */}
             <div className="fixed inset-0 z-0 bg-aurora pointer-events-none" />
 
@@ -38,6 +40,7 @@ export default function LegalPage() {
                     </p>
                 </motion.div>
             </div>
-        </main>
+            </main>
+        </BackgroundDots>
     );
 }

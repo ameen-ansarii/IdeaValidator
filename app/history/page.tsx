@@ -6,6 +6,7 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import { Trash2, Calendar, Award, ArrowRight } from "lucide-react";
 import MaskedText from "../components/MaskedText";
+import BackgroundDots from "../components/BackgroundDots";
 
 export default function HistoryPage() {
     const [history, setHistory] = useState<any[]>([]);
@@ -32,7 +33,8 @@ export default function HistoryPage() {
     };
 
     return (
-        <main className="min-h-screen flex flex-col items-center p-6 pt-32 relative overflow-hidden font-sans selection:bg-purple-500/30">
+        <BackgroundDots>
+            <main className="min-h-screen flex flex-col items-center p-6 pt-32 relative overflow-hidden font-sans selection:bg-purple-500/30">
             {/* NavBar and ThemeToggle are now in layout.tsx */}
             {/* Background */}
             <div className="fixed inset-0 z-0 bg-aurora pointer-events-none" />
@@ -117,6 +119,7 @@ export default function HistoryPage() {
                     )}
                 </div>
             </div>
-        </main>
+            </main>
+        </BackgroundDots>
     );
 }

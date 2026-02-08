@@ -3,6 +3,7 @@
 import { motion } from "framer-motion";
 import FAQItem from "../components/FAQItem";
 import MaskedText from "../components/MaskedText";
+import BackgroundDots from "../components/BackgroundDots";
 
 const faqs = [
     {
@@ -25,7 +26,8 @@ const faqs = [
 
 export default function AboutPage() {
     return (
-        <main className="min-h-screen flex flex-col items-center p-6 pt-32 relative overflow-hidden">
+        <BackgroundDots>
+            <main className="min-h-screen flex flex-col items-center p-6 pt-32 relative overflow-hidden">
             {/* NavBar and ThemeToggle are now in layout.tsx */}
             <div className="bg-aurora" />
 
@@ -52,6 +54,7 @@ export default function AboutPage() {
                     ))}
                 </div>
             </div>
-        </main>
+            </main>
+        </BackgroundDots>
     );
 }

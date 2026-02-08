@@ -1,6 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
+import Image from "next/image";
 import { TrendingUp, Shield, AlertTriangle, ExternalLink as ExternalLinkIcon, Swords } from "lucide-react";
 import { CompetitiveAnalysis as CompetitiveAnalysisType } from "../types";
 
@@ -79,15 +80,19 @@ export default function CompetitiveAnalysis({ data }: CompetitiveAnalysisProps) 
                             <div key={idx} className="group p-6 rounded-2xl border border-white/[0.08] bg-gradient-to-br from-white/[0.03] to-white/[0.01] hover:border-violet-500/30 hover:bg-white/[0.05] transition-all duration-300 backdrop-blur-sm">
                                 <div className="flex items-center justify-between mb-4">
                                     <div className="flex items-center gap-3">
-                                        {/* eslint-disable-next-line @next/next/no-img-element */}
                                         {competitor.url ? (
-                                            <img
+                                            <Image
                                                 src={`https://www.google.com/s2/favicons?domain=${competitor.url}&sz=128`}
                                                 alt={`${competitor.name} icon`}
+                                                width={32}
+                                                height={32}
                                                 className="w-8 h-8 rounded-lg opacity-80"
                                                 onError={(e) => {
-                                                    (e.target as HTMLImageElement).style.display = 'none';
+                                                    // Hide image on error or replace with fallback
+                                                    const target = e.target as HTMLImageElement;
+                                                    target.style.display = 'none';
                                                 }}
+                                                unoptimized // Favicons are small anyway, skip server optimization for speed
                                             />
                                         ) : (
                                             <div className="w-8 h-8 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center text-sm font-bold text-white/60">

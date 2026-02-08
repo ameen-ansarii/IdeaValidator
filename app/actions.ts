@@ -488,3 +488,48 @@ You MUST respond with ONLY a valid JSON object in this exact format:
         throw new Error("Failed to recommend tech stack.");
     }
 }
+
+export async function checkDomainAvailability(domain: string): Promise<boolean> {
+    try {
+        console.log(`Checking availability for ${domain} via AI Search...`);
+
+        // Search for recent availability info
+        const searchResults = await searchWeb(`site:${domain} OR "is ${domain} available" OR "whois ${domain}"`);
+        
+        // If we find the site indexed, it's definitely taken
+        const siteIndexed = searchResults.some(r => r.url.includes(domain));
+        if (siteIndexed) {
+             console.log(`Domain ${domain} is indexed, so it is taken.`);
+             return false;
+        }
+
+        // Use Groq to analyze the search snippets
+        const groq = getGroq();
+        const completion = await groq.chat.completions.create({
+            messages: [
+                {
+                    role: "system",
+                    content: "You are a Domain Name availability analyzer. Analyze the search results to determine if a domain is AVAILABLE or TAKEN. Output JSON: { \"available\": boolean }"
+                },
+                {
+                    role: "user",
+                    content: `Domain: ${domain}\nSearch Results: ${JSON.stringify(searchResults)}\n\nIs it available?`
+                }
+            ],
+            model: "llama-3.3-70b-versatile",
+            response_format: { type: "json_object" }
+        });
+        
+        const result = JSON.parse(completion.choices[0]?.message?.content || "{}");
+        console.log(`AI Verdict for ${domain}:`, result);
+
+        // If AI explicitly says valid: false (taken), return false.
+        // If available: true, return true.
+        // If undefined/null, assume available (optimistic fallback).
+        return result.available !== false; 
+        
+    } catch (e) {
+        console.error("Domain check error", e);
+        return false; // Fail safe
+    }
+}

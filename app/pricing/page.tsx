@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import { Check, Zap, Crown, Rocket, ArrowRight, ArrowLeft } from "lucide-react";
 import { useRouter } from "next/navigation";
 import MaskedText from "../components/MaskedText";
+import BackgroundDots from "../components/BackgroundDots";
 
 const plans = [
     {
@@ -64,7 +65,8 @@ export default function PricingPage() {
     const router = useRouter();
 
     return (
-        <main className="min-h-screen flex flex-col items-center p-6 pt-20 relative overflow-hidden">
+        <BackgroundDots>
+            <main className="min-h-screen flex flex-col items-center p-6 pt-20 relative overflow-hidden">
             {/* Background */}
             <div className="bg-aurora" />
 
@@ -258,6 +260,7 @@ export default function PricingPage() {
                     </a>
                 </motion.div>
             </div>
-        </main>
+            </main>
+        </BackgroundDots>
     );
 }
