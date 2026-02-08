@@ -3,75 +3,94 @@
 import { motion } from "framer-motion";
 import clsx from "clsx";
 import { useEffect, useState } from "react";
+import { RefreshCw } from "lucide-react";
 
-const stories = [
-    { from: "Flickr", to: "Slack", description: "Was a failed video game called Glitch" },
-    { from: "Odeo", to: "Twitter", description: "Started as a podcasting platform" },
-    { from: "Burbn", to: "Instagram", description: "Complex check-in app turned photo sharing" },
-    { from: "YouTube", to: "Video Platform", description: "Originally a video dating site" },
-    { from: "Shopify", to: "E-commerce Giant", description: "Started as a snowboard shop" },
-    { from: "Discord", to: "Chat Giant", description: "Gaming communication tool for Fates Forever" },
-    { from: "Netflix", to: "Streaming King", description: "DVD rental by mail, pivot to streaming" },
-    { from: "Android", to: "Mobile OS", description: "Started as OS for digital cameras" },
+const pivotStories = [
+    { company: "Flickr", pivot: "Slack", story: "Was a failed video game called Glitch" },
+    { company: "Odeo", pivot: "Twitter", story: "Started as a podcasting platform" },
+    { company: "Burbn", pivot: "Instagram", story: "Complex check-in app turned photo sharing" },
+    { company: "YouTube", pivot: "Video Platform", story: "Originally a video dating site" },
+    { company: "Shopify", pivot: "E-commerce Giant", story: "Started as a snowboard shop" },
+    { company: "Discord", pivot: "Chat Giant", story: "Gaming communication tool for Fates Forever" },
+    { company: "Netflix", pivot: "Streaming King", story: "DVD rental by mail, pivot to streaming" },
+    { company: "Android", pivot: "Mobile OS", story: "Started as OS for digital cameras" },
 ];
 
-export default function FloatingPivotStories() {
-    const [activeStories, setActiveStories] = useState<number[]>([]);
-
-    // Randomly select stories to show on mount to vary the experience
-    useEffect(() => {
-        setActiveStories(stories.map((_, i) => i).sort(() => 0.5 - Math.random()).slice(0, 5));
-    }, []);
-
+const FloatingPivotStories = () => { // Changed function declaration to arrow function
     return (
-        <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
-            {/* Left Column - Continuous Vertical Marquee Up */}
-            <div className="absolute left-4 md:left-10 h-full w-64 overflow-hidden mask-gradient-vertical">
+        <div className="fixed inset-0 pointer-events-none z-0 hidden lg:flex justify-between px-4 overflow-hidden">
+            {/* Left Column - Upwards */}
+            <div className="w-64 h-full relative">
+                <div className="absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-[var(--background)] to-transparent z-10" />
+                <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-[var(--background)] to-transparent z-10" />
+
                 <motion.div
-                    className="flex flex-col gap-8 pb-8"
-                    animate={{ y: [0, -1000] }} // Adjust value based on content height
+                    animate={{ y: ["0%", "-33.33%"] }}
                     transition={{
                         repeat: Infinity,
+                        duration: 40,
                         ease: "linear",
-                        duration: 40
                     }}
+                    className="flex flex-col gap-6"
                 >
-                    {[...stories, ...stories, ...stories].map((story, i) => (
+                    {[...pivotStories, ...pivotStories, ...pivotStories].map((story, i) => (
                         <div
-                            key={`left-${i}`}
-                            className="p-4 rounded-xl border border-white/10 bg-white/5 backdrop-blur-sm opacity-40 hover:opacity-60 transition-opacity duration-300"
+                            key={i}
+                            className="p-5 rounded-xl border border-[var(--card-border)] bg-[var(--card-bg)] backdrop-blur-sm opacity-60 hover:opacity-100 transition-opacity"
                         >
-                            <div className="text-[10px] uppercase font-bold text-indigo-400 mb-1">Famous Pivot</div>
-                            <div className="text-sm font-semibold text-gray-200 mb-1">{story.from} → {story.to}</div>
-                            <div className="text-xs text-gray-500 leading-tight">{story.description}</div>
+                            <div className="flex items-center gap-2 mb-2">
+                                <span className="text-[10px] font-bold uppercase tracking-wider text-blue-500">
+                                    <RefreshCw className="w-3 h-3 inline mr-1" />
+                                    Famous Pivot
+                                </span>
+                            </div>
+                            <h4 className="text-sm font-bold text-[var(--foreground)] mb-1">
+                                {story.company} <span className="text-[var(--text-secondary)] font-medium">→ {story.pivot}</span>
+                            </h4>
+                            <p className="text-xs text-[var(--text-secondary)] leading-relaxed">
+                                {story.story}
+                            </p>
                         </div>
                     ))}
                 </motion.div>
             </div>
 
-            {/* Right Column - Continuous Vertical Marquee Down */}
-            <div className="absolute right-4 md:right-10 h-full w-64 overflow-hidden mask-gradient-vertical">
+            {/* Right Column - Downwards */}
+            <div className="w-64 h-full relative">
+                <div className="absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-[var(--background)] to-transparent z-10" />
+                <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-[var(--background)] to-transparent z-10" />
+
                 <motion.div
-                    className="flex flex-col gap-8 pb-8"
-                    animate={{ y: [-1000, 0] }} // Reverse direction
+                    animate={{ y: ["-33.33%", "0%"] }}
                     transition={{
                         repeat: Infinity,
+                        duration: 45,
                         ease: "linear",
-                        duration: 45
                     }}
+                    className="flex flex-col gap-6"
                 >
-                    {[...stories, ...stories, ...stories].map((story, i) => (
+                    {[...[...pivotStories].reverse(), ...pivotStories, ...pivotStories].map((story, i) => (
                         <div
-                            key={`right-${i}`}
-                            className="p-4 rounded-xl border border-white/10 bg-white/5 backdrop-blur-sm opacity-40 hover:opacity-60 transition-opacity duration-300"
+                            key={i}
+                            className="p-5 rounded-xl border border-[var(--card-border)] bg-[var(--card-bg)] backdrop-blur-sm opacity-60 hover:opacity-100 transition-opacity text-right"
                         >
-                            <div className="text-[10px] uppercase font-bold text-cyan-400 mb-1">Success Story</div>
-                            <div className="text-sm font-semibold text-gray-200 mb-1">{story.from} → {story.to}</div>
-                            <div className="text-xs text-gray-500 leading-tight">{story.description}</div>
+                            <div className="flex items-center justify-end gap-2 mb-2">
+                                <span className="text-[10px] font-bold uppercase tracking-wider text-blue-500">
+                                    Success Story
+                                </span>
+                            </div>
+                            <h4 className="text-sm font-bold text-[var(--foreground)] mb-1">
+                                {story.company} <span className="text-[var(--text-secondary)] font-medium">→ {story.pivot}</span>
+                            </h4>
+                            <p className="text-xs text-[var(--text-secondary)] leading-relaxed">
+                                {story.story}
+                            </p>
                         </div>
                     ))}
                 </motion.div>
             </div>
         </div>
     );
-}
+};
+
+export default FloatingPivotStories; // Exported the new arrow function component

@@ -13,7 +13,8 @@ export interface ValidationReport {
     verdictJustification: string;
 
     // New fields
-    confidenceScore: "Low" | "Medium" | "High";
+    viabilityScore: number; // 0-100
+    confidenceScore: "High" | "Medium" | "Low";
     confidenceJustification: string;
     whyItFails: string; // "Why this usually fails"
     whoShouldNotBuild: string; // "Who should NOT build this"

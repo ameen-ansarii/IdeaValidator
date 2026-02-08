@@ -4,12 +4,15 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import clsx from "clsx";
 import Link from "next/link";
-import { Home, Info, Scale, ExternalLink, History as HistoryIcon, Menu, X, Github } from "lucide-react";
+import { useTheme } from "../../context/ThemeContext";
+import { Home, Info, Scale, ExternalLink, History as HistoryIcon, Menu, X, Github, Sparkles, Sun, Moon } from "lucide-react";
 import { usePathname } from "next/navigation";
 
 export default function Dock() {
     const pathname = usePathname();
     const [isOpen, setIsOpen] = useState(false);
+    const [hoveredTab, setHoveredTab] = useState<string | null>(null);
+    const { theme, toggleTheme } = useTheme();
 
     const dockItems = [
         { label: "Validator", icon: Home, href: "/" },
@@ -20,55 +23,102 @@ export default function Dock() {
 
     return (
         <>
-            {/* Desktop Dock (Hidden on Mobile) */}
-            <div className="hidden md:block fixed top-6 left-1/2 -translate-x-1/2 z-50">
+            {/* Desktop Dock (Floating Liquid Glass) */}
+            <div className="hidden md:flex fixed top-6 left-1/2 -translate-x-1/2 z-50">
                 <motion.div
-                    initial={{ y: -50, opacity: 0 }}
+                    initial={{ y: -100, opacity: 0 }}
                     animate={{ y: 0, opacity: 1 }}
-                    transition={{ type: "spring", bounce: 0.3, duration: 0.8 }}
+                    transition={{ type: "spring", bounce: 0.4, duration: 0.8 }}
                     className={clsx(
-                        "flex items-center gap-1 p-1.5 rounded-full border border-white/10 shadow-lg",
-                        "bg-[#0a0a0a]/80 backdrop-blur-md transition-all duration-300"
+                        "flex items-center gap-1 p-2 rounded-full",
+                        "backdrop-blur-2xl shadow-[0_8px_32px_0_rgba(0,0,0,0.36)]",
+                        // Dynamic Theme Colors
+                        "bg-[var(--dock-bg)] border border-[var(--dock-border)]"
                     )}
                 >
                     {dockItems.map((item) => {
                         const isActive = pathname === item.href;
+                        const isHovered = hoveredTab === item.href;
                         const Icon = item.icon;
 
                         return (
                             <Link key={item.href} href={item.href}>
-                                <div className="relative group px-4 py-2 rounded-full flex items-center gap-2 cursor-pointer transition-all duration-200">
+                                <div
+                                    onMouseEnter={() => setHoveredTab(item.href)}
+                                    onMouseLeave={() => setHoveredTab(null)}
+                                    className="relative px-5 py-2.5 rounded-full flex items-center gap-2 cursor-pointer transition-all duration-300"
+                                >
+                                    {/* Active/Hover Backgrounds */}
                                     {isActive && (
                                         <motion.div
-                                            layoutId="dock-pill"
-                                            className="absolute inset-0 bg-white/10 rounded-full border border-white/5"
+                                            layoutId="dock-active-pill"
+                                            className="absolute inset-0 bg-black/10 dark:bg-white/10 rounded-full shadow-inner border border-black/5 dark:border-white/5"
                                             transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
                                         />
                                     )}
-                                    {!isActive && (
-                                        <div className="absolute inset-0 bg-transparent group-hover:bg-white/5 rounded-full transition-colors duration-200" />
+
+                                    {isHovered && !isActive && (
+                                        <motion.div
+                                            layoutId="dock-hover-pill"
+                                            className="absolute inset-0 bg-black/5 dark:bg-white/5 rounded-full"
+                                            initial={{ opacity: 0 }}
+                                            animate={{ opacity: 1 }}
+                                            exit={{ opacity: 0 }}
+                                        />
                                     )}
-                                    <span className={clsx("relative z-10 flex items-center gap-2", isActive ? "text-white font-medium" : "text-gray-400 group-hover:text-gray-200")}>
-                                        <Icon className={clsx("w-4 h-4", isActive && "text-white")} />
+
+                                    <span className={clsx(
+                                        "relative z-10 flex items-center gap-2 transition-colors duration-300",
+                                        isActive ? "text-[var(--foreground)] font-medium" : "text-[var(--text-secondary)] hover:text-[var(--foreground)]"
+                                    )}>
+                                        <Icon className={clsx("w-4 h-4 transition-transform duration-300", isHovered && "scale-110")} />
                                         <span className="text-sm tracking-tight">{item.label}</span>
                                     </span>
+
+                                    {/* Active Dot */}
+                                    {isActive && (
+                                        <motion.div
+                                            layoutId="active-dot"
+                                            className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-[var(--foreground)] shadow-[0_0_8px_var(--foreground)]"
+                                        />
+                                    )}
                                 </div>
                             </Link>
                         );
                     })}
-                    <div className="w-px h-4 bg-white/10 mx-2" />
-                    <a href="https://github.com" target="_blank" className="relative px-3 py-2 rounded-full text-gray-500 hover:text-white hover:bg-white/5 transition-all flex items-center gap-2">
-                        <span className="text-xs font-medium">GITHUB</span>
-                        <ExternalLink className="w-3 h-3" />
+
+                    <div className="w-px h-5 bg-[var(--dock-border)] mx-2" />
+
+                    {/* Theme Toggle */}
+                    <button
+                        onClick={toggleTheme}
+                        className="p-2 rounded-full text-[var(--text-secondary)] hover:text-[var(--foreground)] hover:bg-[var(--card-highlight)] transition-all"
+                    >
+                        {theme === 'dark' ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+                    </button>
+
+                    <a
+                        href="https://github.com"
+                        target="_blank"
+                        className="relative px-4 py-2 rounded-full text-[var(--text-secondary)] hover:text-[var(--foreground)] hover:bg-[var(--card-highlight)] transition-all flex items-center gap-2 group"
+                    >
+                        <Github className="w-4 h-4 transition-transform group-hover:scale-110" />
+                        <span className="text-xs font-semibold tracking-wide group-hover:tracking-wider transition-all">GITHUB</span>
                     </a>
                 </motion.div>
             </div>
 
             {/* Mobile Hamburger (Visible on small screens) */}
-            <div className="md:hidden fixed top-4 right-4 z-50">
+            <div className="md:hidden fixed top-4 right-4 z-50 flex items-center gap-3">
+                <button
+                    onClick={toggleTheme}
+                    className="p-3 rounded-full bg-[var(--mb-dock-bg,black)]/60 border border-[var(--card-border)] backdrop-blur-xl text-[var(--foreground)] shadow-lg active:scale-95 transition-transform"
+                >
+                    {theme === 'dark' ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+                </button>
                 <button
                     onClick={() => setIsOpen(true)}
-                    className="p-3 rounded-full bg-black/50 border border-white/10 backdrop-blur-md text-white shadow-lg active:scale-95 transition-transform"
+                    className="p-3 rounded-full bg-[var(--mb-dock-bg,black)]/60 border border-[var(--card-border)] backdrop-blur-xl text-[var(--foreground)] shadow-lg active:scale-95 transition-transform"
                 >
                     <Menu className="w-6 h-6" />
                 </button>
@@ -78,15 +128,15 @@ export default function Dock() {
             <AnimatePresence>
                 {isOpen && (
                     <motion.div
-                        initial={{ opacity: 0, y: -20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -20 }}
-                        className="fixed inset-0 z-[60] bg-black/95 backdrop-blur-xl flex flex-col p-6"
+                        initial={{ opacity: 0, scale: 0.95, filter: "blur(10px)" }}
+                        animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }}
+                        exit={{ opacity: 0, scale: 0.95, filter: "blur(10px)" }}
+                        className="fixed inset-0 z-[60] bg-[var(--background)]/95 backdrop-blur-3xl flex flex-col p-6"
                     >
                         <div className="flex justify-end mb-8">
                             <button
                                 onClick={() => setIsOpen(false)}
-                                className="p-3 rounded-full bg-white/10 text-white"
+                                className="p-3 rounded-full bg-[var(--card-highlight)] text-[var(--foreground)] hover:bg-[var(--card-border)] transition-colors"
                             >
                                 <X className="w-6 h-6" />
                             </button>
@@ -99,26 +149,22 @@ export default function Dock() {
                                     href={item.href}
                                     onClick={() => setIsOpen(false)}
                                     className={clsx(
-                                        "text-3xl font-bold tracking-tight flex items-center gap-4",
-                                        pathname === item.href ? "text-white" : "text-gray-500"
+                                        "text-4xl font-bold tracking-tighter flex items-center gap-4 transition-all hover:translate-x-2",
+                                        pathname === item.href ? "text-[var(--foreground)]" : "text-[var(--text-secondary)] hover:text-[var(--foreground)]"
                                     )}
                                 >
-                                    <item.icon className="w-8 h-8" />
+                                    <item.icon className={clsx("w-8 h-8", pathname === item.href ? "text-[var(--foreground)]" : "text-[var(--text-secondary)]")} />
                                     {item.label}
                                 </Link>
                             ))}
 
-                            <div className="h-px bg-white/10 my-4" />
+                            <div className="h-px bg-[var(--dock-border)] my-4" />
 
-                            <a href="https://github.com" target="_blank" className="text-xl font-medium text-gray-500 flex items-center gap-4">
+                            <a href="https://github.com" target="_blank" className="text-xl font-medium text-[var(--text-secondary)] hover:text-[var(--foreground)] flex items-center gap-4 transition-colors">
                                 <Github className="w-6 h-6" />
-                                GitHub
+                                GitHub Repo
                             </a>
                         </nav>
-
-                        <div className="mt-auto text-center text-gray-600 text-sm pb-8">
-                            Idea Validator &copy; {new Date().getFullYear()}
-                        </div>
                     </motion.div>
                 )}
             </AnimatePresence>

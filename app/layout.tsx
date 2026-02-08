@@ -1,10 +1,15 @@
 import type { Metadata } from "next";
 import { Outfit } from "next/font/google";
 import "./globals.css";
+import { ThemeProvider } from "./context/ThemeContext";
+import { AuthProvider } from "./context/AuthContext";
+import { SubscriptionProvider } from "./context/SubscriptionContext";
+import NavBar from "./components/NavBar";
+import ThemeToggle from "./components/ThemeToggle";
 
 const outfit = Outfit({
   subsets: ["latin"],
-  variable: "--font-inter", // Reusing the variable name to match globals.css or I should update globals.css. I'll stick to variable name usage.
+  variable: "--font-inter",
   display: 'swap',
 });
 
@@ -21,7 +26,17 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${outfit.variable} antialiased`}>
-        {children}
+        <ThemeProvider>
+          <AuthProvider>
+            <SubscriptionProvider>
+              {/* Global Navigation - appears on all pages */}
+              <NavBar />
+              <ThemeToggle />
+              {/* Page Content */}
+              {children}
+            </SubscriptionProvider>
+          </AuthProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

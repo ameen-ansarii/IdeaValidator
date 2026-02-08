@@ -1,7 +1,10 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  // Preserve scroll position when navigating back
+  experimental: {
+    scrollRestoration: true,
+  },
 };
 
 export default nextConfig;

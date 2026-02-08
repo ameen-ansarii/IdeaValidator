@@ -12,10 +12,10 @@ const trends = [
 
 export default function TrendTicker() {
     return (
-        <div className="w-full border-y border-white/5 bg-[#050505]/50 backdrop-blur-sm overflow-hidden py-3 flex relative z-10">
-            <div className="flex-shrink-0 flex items-center gap-2 px-6 border-r border-white/5 bg-[#050505] z-20">
+        <div className="w-full border-y border-[var(--card-border)] bg-[var(--background)]/80 backdrop-blur-sm overflow-hidden py-3 flex relative z-10">
+            <div className="flex-shrink-0 flex items-center gap-2 px-6 border-r border-[var(--card-border)] bg-[var(--background)] z-20">
                 <TrendingUp className="w-4 h-4 text-green-400" />
-                <span className="text-xs font-semibold text-white tracking-wider uppercase">Live Trends</span>
+                <span className="text-xs font-semibold text-[var(--foreground)] tracking-wider uppercase">Live Trends</span>
             </div>
 
             <div className="flex overflow-hidden relative w-full mask-gradient">
@@ -30,8 +30,8 @@ export default function TrendTicker() {
                 >
                     {[...trends, ...trends, ...trends].map((trend, i) => (
                         <div key={i} className="flex items-center gap-2">
-                            <span className="text-sm font-medium text-gray-400 hover:text-white transition-colors cursor-default">#{trend}</span>
-                            <span className="w-1 h-1 rounded-full bg-white/10" />
+                            <span className="text-sm font-medium text-[var(--text-secondary)] hover:text-[var(--foreground)] transition-colors cursor-default">#{trend}</span>
+                            <span className="w-1 h-1 rounded-full bg-[var(--text-secondary)]/30" />
                         </div>
                     ))}
                 </motion.div>

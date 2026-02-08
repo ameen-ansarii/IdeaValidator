@@ -1,0 +1,512 @@
+/* ============================================================================
+   STAGGERED MENU - ADAPTIVE LIGHT/DARK THEME
+   A slide-in animated navigation menu with staggered animations
+   Uses .dark and .light class-based theming (dark is default)
+   ============================================================================ */
+
+/* ============================================================================
+   CSS VARIABLES - DARK MODE (DEFAULT - app starts with .dark on html)
+   ============================================================================ */
+.staggered-menu {
+  --accent-color: #5227FF;
+  --bg-primary: #0a0a0f;
+  --bg-secondary: #12121a;
+  --bg-overlay: rgba(10, 10, 15, 0.98);
+  --text-primary: #ffffff;
+  --text-secondary: rgba(255, 255, 255, 0.7);
+  --text-muted: rgba(255, 255, 255, 0.5);
+  --border-color: rgba(255, 255, 255, 0.15);
+  --glow-color: rgba(139, 92, 246, 0.3);
+  --shadow-color: rgba(0, 0, 0, 0.4);
+  --hamburger-bg: rgba(255, 255, 255, 0.08);
+  --hamburger-bg-hover: rgba(255, 255, 255, 0.15);
+  --hamburger-border: rgba(255, 255, 255, 0.12);
+  --layer-1-bg: #B19EEF;
+  --layer-2-bg: #5227FF;
+
+  position: relative;
+  z-index: 9999;
+}
+
+/* Dark mode explicit (redundant but clear) */
+.dark .staggered-menu,
+html.dark .staggered-menu {
+  --bg-primary: #0a0a0f;
+  --bg-secondary: #12121a;
+  --bg-overlay: rgba(10, 10, 15, 0.98);
+  --text-primary: #ffffff;
+  --text-secondary: rgba(255, 255, 255, 0.7);
+  --text-muted: rgba(255, 255, 255, 0.5);
+  --border-color: rgba(255, 255, 255, 0.15);
+  --glow-color: rgba(139, 92, 246, 0.3);
+  --shadow-color: rgba(0, 0, 0, 0.4);
+  --hamburger-bg: rgba(255, 255, 255, 0.08);
+  --hamburger-bg-hover: rgba(255, 255, 255, 0.15);
+  --hamburger-border: rgba(255, 255, 255, 0.12);
+}
+
+/* ============================================================================
+   CSS VARIABLES - LIGHT MODE (when .light class is on html)
+   ============================================================================ */
+.light .staggered-menu,
+html.light .staggered-menu {
+  --bg-primary: #ffffff;
+  --bg-secondary: #f8f8fa;
+  --bg-overlay: rgba(255, 255, 255, 0.98);
+  --text-primary: #1a1a1a;
+  --text-secondary: rgba(26, 26, 26, 0.7);
+  --text-muted: rgba(26, 26, 26, 0.5);
+  --border-color: rgba(0, 0, 0, 0.12);
+  --glow-color: rgba(82, 39, 255, 0.2);
+  --shadow-color: rgba(0, 0, 0, 0.08);
+  --hamburger-bg: rgba(0, 0, 0, 0.06);
+  --hamburger-bg-hover: rgba(0, 0, 0, 0.1);
+  --hamburger-border: rgba(0, 0, 0, 0.1);
+}
+
+/* ============================================================================
+   HAMBURGER BUTTON - ADAPTS TO THEME
+   ============================================================================ */
+.menu-trigger {
+  position: fixed;
+  top: 1.5rem;
+  right: 1.5rem;
+  z-index: 10001;
+  pointer-events: auto;
+}
+
+.hamburger-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  background: var(--hamburger-bg);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--hamburger-border);
+  border-radius: 100px;
+  padding: 0.75rem 1.25rem;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.hamburger-btn:hover {
+  background: var(--hamburger-bg-hover);
+  border-color: var(--border-color);
+  transform: scale(1.02);
+}
+
+.hamburger-btn:focus {
+  outline: none;
+}
+
+.hamburger-btn:focus-visible {
+  outline: 2px solid var(--accent-color);
+  outline-offset: 3px;
+}
+
+/* Hamburger Icon Lines */
+.hamburger-icon {
+  position: relative;
+  width: 20px;
+  height: 18px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.hamburger-line {
+  display: block;
+  width: 100%;
+  height: 2px;
+  background: var(--text-primary);
+  border-radius: 2px;
+  transform-origin: center center;
+}
+
+/* Hamburger Text Label */
+.hamburger-text {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-size: 0.875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--text-primary);
+  overflow: hidden;
+  height: 1.2em;
+}
+
+/* ============================================================================
+   OVERLAY BACKDROP - SEMI-TRANSPARENT
+   ============================================================================ */
+.menu-backdrop {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 9999;
+}
+
+.light .menu-backdrop,
+html.light .menu-backdrop {
+  background: rgba(0, 0, 0, 0.25);
+}
+
+/* ============================================================================
+   SLIDING PANEL - HALF SCREEN FROM RIGHT
+   ============================================================================ */
+.menu-panel {
+  position: fixed;
+  top: 0;
+  right: 0;
+  width: clamp(320px, 50vw, 600px);
+  height: 100vh;
+  z-index: 10000;
+  overflow: hidden;
+  pointer-events: auto;
+}
+
+/* Panel positioned left */
+.menu-panel[data-position="left"] {
+  right: auto;
+  left: 0;
+}
+
+/* ============================================================================
+   ANIMATED BACKGROUND LAYERS - COLORED PRE-LAYERS
+   ============================================================================ */
+.menu-bg-layer {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.menu-bg-layer.layer-1 {
+  background: var(--layer-1-bg);
+  z-index: 1;
+}
+
+.menu-bg-layer.layer-2 {
+  background: var(--layer-2-bg);
+  z-index: 2;
+}
+
+.menu-bg-layer.layer-3 {
+  background: var(--bg-overlay);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  z-index: 3;
+  box-shadow: -10px 0 40px var(--shadow-color);
+}
+
+/* ============================================================================
+   MENU CONTENT CONTAINER
+   ============================================================================ */
+.menu-content {
+  position: relative;
+  z-index: 4;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 6rem 2.5rem 2rem 2.5rem;
+}
+
+/* ============================================================================
+   NAVIGATION ITEMS
+   ============================================================================ */
+.menu-nav {
+  flex: 1;
+  display: flex;
+  align-items: center;
+}
+
+.menu-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+/* Menu Item Wrapper */
+.menu-item-wrapper {
+  overflow: hidden;
+}
+
+/* Menu Item Link */
+.menu-item {
+  position: relative;
+  display: flex;
+  align-items: baseline;
+  gap: 1rem;
+  padding: 0.5rem 0;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.menu-item:hover {
+  transform: translateX(0.75rem);
+}
+
+.menu-item:focus {
+  outline: none;
+}
+
+.menu-item:focus-visible .menu-item-label {
+  text-decoration: underline;
+  text-underline-offset: 6px;
+}
+
+/* Item Number */
+.menu-item-number {
+  font-family: 'JetBrains Mono', 'SF Mono', 'Monaco', monospace;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--accent-color);
+  min-width: 1.75rem;
+  transition: color 0.3s ease;
+  opacity: 0.8;
+}
+
+.menu-item:hover .menu-item-number {
+  opacity: 1;
+}
+
+/* Item Label - Large Typography */
+.menu-item-label {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-size: clamp(2rem, 5vw, 3.5rem);
+  font-weight: 800;
+  color: var(--text-primary);
+  text-transform: uppercase;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+  transition: all 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.menu-item:hover .menu-item-label {
+  color: var(--accent-color);
+}
+
+/* Hover Indicator Line */
+.menu-item-indicator {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 0;
+  height: 2px;
+  background: var(--accent-color);
+  transition: width 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+  border-radius: 2px;
+}
+
+.menu-item:hover .menu-item-indicator {
+  width: 100%;
+}
+
+/* Empty State */
+.menu-item.empty {
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+/* ============================================================================
+   FOOTER SECTION
+   ============================================================================ */
+.menu-footer {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  margin-top: auto;
+  padding-top: 2rem;
+  border-top: 1px solid var(--border-color);
+}
+
+/* ============================================================================
+   SOCIAL LINKS
+   ============================================================================ */
+.menu-socials {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.socials-title {
+  margin: 0;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  color: var(--accent-color);
+}
+
+.socials-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.social-link {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  text-decoration: none;
+  position: relative;
+  padding-bottom: 2px;
+  transition: all 0.3s ease;
+}
+
+.social-link::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 0;
+  height: 1px;
+  background: var(--accent-color);
+  transition: width 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.social-link:hover {
+  color: var(--text-primary);
+}
+
+.social-link:hover::after {
+  width: 100%;
+}
+
+.social-link:focus {
+  outline: none;
+}
+
+.social-link:focus-visible {
+  outline: 2px solid var(--accent-color);
+  outline-offset: 4px;
+  border-radius: 2px;
+}
+
+/* ============================================================================
+   USER AUTH SECTION
+   ============================================================================ */
+.menu-user-auth {
+  display: flex;
+  align-items: center;
+}
+
+/* ============================================================================
+   RESPONSIVE DESIGN
+   ============================================================================ */
+
+/* Tablet */
+@media (max-width: 1024px) {
+  .menu-panel {
+    width: clamp(320px, 65vw, 500px);
+  }
+
+  .menu-content {
+    padding: 5rem 2rem 2rem 2rem;
+  }
+
+  .menu-item-label {
+    font-size: clamp(1.75rem, 5vw, 2.5rem);
+  }
+}
+
+/* Mobile - Full Width */
+@media (max-width: 640px) {
+  .menu-trigger {
+    top: 1rem;
+    right: 1rem;
+  }
+
+  .hamburger-btn {
+    padding: 0.6rem 1rem;
+  }
+
+  .hamburger-text {
+    font-size: 0.75rem;
+  }
+
+  .hamburger-icon {
+    width: 18px;
+    height: 16px;
+  }
+
+  .menu-panel {
+    width: 100%;
+  }
+
+  .menu-content {
+    padding: 5rem 1.5rem 2rem 1.5rem;
+    justify-content: flex-start;
+    padding-top: 5rem;
+  }
+
+  .menu-list {
+    gap: 0.15rem;
+  }
+
+  .menu-item {
+    gap: 0.75rem;
+    padding: 0.4rem 0;
+  }
+
+  .menu-item-number {
+    font-size: 0.65rem;
+  }
+
+  .menu-item-label {
+    font-size: clamp(1.5rem, 8vw, 2rem);
+  }
+
+  .menu-footer {
+    gap: 1rem;
+    padding-top: 1.5rem;
+  }
+
+  .socials-list {
+    gap: 1rem;
+  }
+}
+
+/* ============================================================================
+   REDUCED MOTION PREFERENCE
+   ============================================================================ */
+@media (prefers-reduced-motion: reduce) {
+
+  .hamburger-line,
+  .menu-item,
+  .menu-item-label,
+  .menu-item-indicator,
+  .social-link,
+  .social-link::after,
+  .hamburger-btn {
+    transition: none !important;
+  }
+}
+
+/* ============================================================================
+   HIGH CONTRAST MODE
+   ============================================================================ */
+@media (prefers-contrast: high) {
+  .hamburger-btn {
+    border-color: var(--text-primary);
+    border-width: 2px;
+  }
+
+  .menu-bg-layer.layer-3 {
+    background: var(--bg-primary);
+  }
+}

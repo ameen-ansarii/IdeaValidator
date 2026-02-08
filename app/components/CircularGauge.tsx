@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import clsx from "clsx";
+
 
 interface CircularGaugeProps {
     score: number; // 0 to 100
@@ -11,34 +11,56 @@ interface CircularGaugeProps {
 }
 
 export default function CircularGauge({ score, label, subLabel, isRoastMode = false }: CircularGaugeProps) {
-    const radius = 36;
+    const radius = 40;
     const circumference = 2 * Math.PI * radius;
     const strokeDashoffset = circumference - (score / 100) * circumference;
 
+    // Determine color based on score (Dynamic coloring)
+    const getColor = (s: number) => {
+        if (isRoastMode) return "#ef4444"; // Always red in roast mode
+        if (s >= 80) return "#22c55e"; // Green
+        if (s >= 50) return "#eab308"; // Yellow
+        return "#ef4444"; // Red
+    };
+
+    const color = getColor(score);
+
     return (
         <div className="flex flex-col items-center justify-center relative w-full h-full">
-            <div className="relative w-32 h-32">
+            <div className="relative w-40 h-40 flex items-center justify-center">
+                {/* Rotating Outer Ring for specific "Tech" feel */}
+                <motion.div
+                    className="absolute inset-0 rounded-full border border-dashed border-[var(--card-border)]"
+                    animate={{ rotate: 360 }}
+                    transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
+                />
+
                 <svg className="w-full h-full transform -rotate-90">
-                    {/* Background Circle */}
+                    <defs>
+                        <linearGradient id="scoreGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" stopColor={color} stopOpacity="0.4" />
+                            <stop offset="100%" stopColor={color} stopOpacity="1" />
+                        </linearGradient>
+                    </defs>
+
+                    {/* Background Track (Dashed) */}
                     <circle
-                        cx="64"
-                        cy="64"
+                        cx="80"
+                        cy="80"
                         r={radius}
                         stroke="currentColor"
-                        strokeWidth="8"
+                        strokeWidth="6"
                         fill="transparent"
-                        className={clsx(
-                            "text-opacity-10 dark:text-opacity-10",
-                            isRoastMode ? "text-red-500" : "text-white"
-                        )}
+                        strokeDasharray="4 6" // Dashed effect
+                        className="text-[var(--card-border)]"
                     />
 
-                    {/* Animated Progress Circle */}
+                    {/* Progress Circle with Gradient */}
                     <motion.circle
-                        cx="64"
-                        cy="64"
+                        cx="80"
+                        cy="80"
                         r={radius}
-                        stroke="currentColor"
+                        stroke="url(#scoreGradient)"
                         strokeWidth="8"
                         fill="transparent"
                         strokeDasharray={circumference}
@@ -46,30 +68,28 @@ export default function CircularGauge({ score, label, subLabel, isRoastMode = fa
                         animate={{ strokeDashoffset: strokeDashoffset }}
                         transition={{ duration: 1.5, ease: "easeOut", delay: 0.2 }}
                         strokeLinecap="round"
-                        className={clsx(
-                            isRoastMode
-                                ? "text-red-500 drop-shadow-[0_0_8px_rgba(239,68,68,0.5)]"
-                                : "text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.5)]"
-                        )}
+                        style={{ filter: "drop-shadow(0 0 10px var(--gauge-glow))" }}
                     />
                 </svg>
 
                 {/* Center Text */}
                 <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
                     <motion.span
-                        className={clsx("text-4xl font-bold tracking-tighter", isRoastMode ? "text-red-100" : "text-white")}
+                        className="text-5xl font-bold tracking-tighter"
+                        style={{ color: color }}
                         initial={{ opacity: 0, scale: 0.5 }}
                         animate={{ opacity: 1, scale: 1 }}
                         transition={{ delay: 0.5, type: "spring" }}
                     >
-                        {score}%
+                        {score}
                     </motion.span>
+                    <span className="text-[10px] uppercase tracking-widest text-[var(--text-secondary)] mt-1 font-medium">Score</span>
                 </div>
             </div>
 
-            <div className="text-center mt-2">
-                <h3 className="text-xs font-semibold uppercase tracking-wider text-gray-500 mb-0.5">{label}</h3>
-                <p className="text-[10px] text-gray-600 font-medium">{subLabel}</p>
+            <div className="text-center mt-[-10px] relative z-10">
+                <h3 className="text-xs font-semibold uppercase tracking-wider text-[var(--text-secondary)] mb-0.5">{label}</h3>
+                <p className="text-[10px] text-[var(--text-secondary)] font-medium">{subLabel}</p>
             </div>
         </div>
     );

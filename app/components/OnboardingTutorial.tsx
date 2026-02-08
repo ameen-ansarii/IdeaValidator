@@ -74,16 +74,16 @@ export default function OnboardingTutorial() {
                     >
                         {/* Card */}
                         <div className="macos-card p-1 shadow-2xl">
-                            <div className={`rounded-[22px] p-8 md:p-12 relative overflow-hidden bg-[#0a0a0a]`}>
+                            <div className={`rounded-[22px] p-8 md:p-12 relative overflow-hidden bg-[var(--card-bg)]`}>
 
                                 <div className={`absolute inset-0 bg-gradient-to-br ${steps[currentStep].color} opacity-10`} />
 
                                 {/* Close button */}
                                 <button
                                     onClick={handleSkip}
-                                    className="absolute top-4 right-4 w-10 h-10 rounded-full bg-white/5 hover:bg-white/10 flex items-center justify-center transition-all border border-white/5"
+                                    className="absolute top-4 right-4 w-10 h-10 rounded-full bg-[var(--card-highlight)] hover:bg-[var(--card-border)] flex items-center justify-center transition-all border border-[var(--card-border)]"
                                 >
-                                    <X className="w-5 h-5 text-gray-400" />
+                                    <X className="w-5 h-5 text-[var(--text-secondary)]" />
                                 </button>
 
                                 {/* Content */}
@@ -93,10 +93,10 @@ export default function OnboardingTutorial() {
                                     </div>
 
                                     <div className="space-y-3">
-                                        <h2 className="text-3xl md:text-4xl font-bold text-white">
+                                        <h2 className="text-3xl md:text-4xl font-bold text-[var(--foreground)]">
                                             {steps[currentStep].title}
                                         </h2>
-                                        <p className="text-lg text-gray-400 leading-relaxed">
+                                        <p className="text-lg text-[var(--text-secondary)] leading-relaxed">
                                             {steps[currentStep].description}
                                         </p>
                                     </div>
@@ -108,8 +108,8 @@ export default function OnboardingTutorial() {
                                                 key={idx}
                                                 onClick={() => setCurrentStep(idx)}
                                                 className={`h-2 rounded-full transition-all ${idx === currentStep
-                                                        ? 'w-8 bg-white'
-                                                        : 'w-2 bg-white/20 hover:bg-white/40'
+                                                    ? 'w-8 bg-[var(--foreground)]'
+                                                    : 'w-2 bg-[var(--foreground)]/20 hover:bg-[var(--foreground)]/40'
                                                     }`}
                                             />
                                         ))}
@@ -120,14 +120,14 @@ export default function OnboardingTutorial() {
                                         {currentStep > 0 && (
                                             <button
                                                 onClick={() => setCurrentStep(currentStep - 1)}
-                                                className="flex-1 px-6 py-3 rounded-xl bg-white/5 hover:bg-white/10 text-white font-medium transition-all border border-white/10"
+                                                className="flex-1 px-6 py-3 rounded-xl bg-[var(--card-highlight)] hover:bg-[var(--card-border)] text-[var(--foreground)] font-medium transition-all border border-[var(--card-border)]"
                                             >
                                                 Back
                                             </button>
                                         )}
                                         <button
                                             onClick={handleNext}
-                                            className="flex-1 px-6 py-3 rounded-xl bg-white hover:bg-gray-200 text-black font-semibold transition-all flex items-center justify-center gap-2"
+                                            className="flex-1 px-6 py-3 rounded-xl bg-[var(--foreground)] hover:opacity-90 text-[var(--background)] font-semibold transition-all flex items-center justify-center gap-2"
                                         >
                                             {currentStep < steps.length - 1 ? (
                                                 <>

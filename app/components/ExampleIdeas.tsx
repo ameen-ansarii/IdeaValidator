@@ -54,15 +54,17 @@ export default function ExampleIdeas({ onSelectIdea }: ExampleIdeasProps) {
             transition={{ delay: 0.8, duration: 0.6 }}
             className="mt-16 max-w-5xl mx-auto"
         >
+
+
             <div className="text-center mb-10 space-y-4">
                 <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-purple-500/30 bg-purple-500/10 mb-2">
                     <Lightbulb className="w-3.5 h-3.5 text-purple-400" />
-                    <span className="text-xs font-medium text-purple-300">Try Famous Ideas</span>
+                    <span className="text-xs font-medium text-purple-400">Try Famous Ideas</span>
                 </div>
-                <h3 className="text-2xl md:text-3xl font-semibold text-white tracking-tight">
+                <h3 className="text-2xl md:text-3xl font-semibold text-[var(--foreground)] tracking-tight">
                     See how unicorns would be validated
                 </h3>
-                <p className="text-gray-500 text-sm">
+                <p className="text-[var(--text-secondary)] text-sm">
                     Click any idea below to run an instant validation
                 </p>
             </div>
@@ -77,7 +79,7 @@ export default function ExampleIdeas({ onSelectIdea }: ExampleIdeasProps) {
                         whileHover={{ scale: 1.02, y: -2 }}
                         whileTap={{ scale: 0.98 }}
                         onClick={() => onSelectIdea(example.idea)}
-                        className={`group relative p-6 rounded-xl bg-white/5 border border-white/5 hover:border-white/10 transition-all duration-300 text-left overflow-hidden`}
+                        className={`group relative p-6 rounded-xl bg-[var(--card-bg)] border border-[var(--card-border)] hover:border-[var(--text-secondary)] transition-all duration-300 text-left overflow-hidden shadow-sm`}
                     >
                         {/* Subtle gradient wash on hover */}
                         <div className={`absolute inset-0 bg-gradient-to-br ${example.color} opacity-0 group-hover:opacity-10 transition-opacity duration-300`} />
@@ -89,16 +91,17 @@ export default function ExampleIdeas({ onSelectIdea }: ExampleIdeasProps) {
                                         src={example.logo}
                                         alt={`${example.name} logo`}
                                         className="w-8 h-8 opacity-80 group-hover:opacity-100 transition-opacity"
+                                        style={{ filter: "var(--logo-filter)" }}
                                     />
                                 </div>
-                                <Zap className="w-4 h-4 text-gray-600 group-hover:text-yellow-400 transition-colors" />
+                                <Zap className="w-4 h-4 text-[var(--text-secondary)] group-hover:text-yellow-400 transition-colors" />
                             </div>
 
                             <div>
-                                <h4 className="font-semibold text-lg text-white mb-2">
+                                <h4 className="font-semibold text-lg text-[var(--foreground)] mb-2">
                                     {example.name}
                                 </h4>
-                                <p className="text-xs text-gray-400 leading-relaxed line-clamp-3">
+                                <p className="text-xs text-[var(--text-secondary)] leading-relaxed line-clamp-3">
                                     {example.idea}
                                 </p>
                             </div>

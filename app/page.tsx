@@ -2,12 +2,13 @@
 
 import { useState, useEffect, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
-import { ArrowRight, AlertTriangle, TrendingUp, Target, ShieldAlert, Layers, Sparkles, AlertOctagon, DollarSign, Users, Download, RefreshCw, Map, Lock, Share2, Check, BarChart3, Zap, Flame, Palette } from "lucide-react";
+import { ArrowRight, AlertTriangle, TrendingUp, Target, ShieldAlert, Layers, Sparkles, AlertOctagon, DollarSign, Users, Download, RefreshCw, Map, Lock, Share2, Check, BarChart3, Zap, Flame, Palette, Search, ExternalLink, Minus, TrendingDown, Globe, Building2, CreditCard, Crown } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import clsx from "clsx";
+import Link from "next/link";
 import { validateIdea, pivotIdea, generateRoadmap, analyzeCompetitors, calculateMarketSize, roastIdea, generateBrandVibe, recommendTechStack } from "./actions";
 import { ValidationReport, CompetitiveAnalysis as CompetitiveAnalysisType, MarketSize, TechStack, PivotStrategy } from "./types";
-import Dock from "./components/Dock/Dock";
+
 import MaskedText from "./components/MaskedText";
 import AnalysisTerminal from "./components/AnalysisTerminal";
 import ExampleIdeas from "./components/ExampleIdeas";
@@ -20,8 +21,11 @@ import RoastCard from "./components/RoastCard";
 import BrandVibe from "./components/BrandVibe";
 import TechStackDisplay from "./components/TechStackDisplay";
 import CircularGauge from "./components/CircularGauge";
-import FloatingPivotStories from "./components/FloatingPivotStories";
 import { generatePDF } from "./utils/generatePDF";
+import UserAuth from "./components/UserAuth";
+import LockedFeature, { LockedBadge } from "./components/LockedFeature";
+import { useSubscription } from "./context/SubscriptionContext";
+import PricingModal from "./components/PricingModal";
 
 function HomeContent() {
   const [idea, setIdea] = useState("");
@@ -33,6 +37,7 @@ function HomeContent() {
   const [isGeneratingRoadmap, setIsGeneratingRoadmap] = useState(false);
   const [isCopied, setIsCopied] = useState(false);
   const [showRoadmapModal, setShowRoadmapModal] = useState(false);
+  const [showPricingModal, setShowPricingModal] = useState(false);
   const [competitiveAnalysis, setCompetitiveAnalysis] = useState<CompetitiveAnalysisType | null>(null);
   const [isAnalyzingCompetitors, setIsAnalyzingCompetitors] = useState(false);
   const [marketSize, setMarketSize] = useState<MarketSize | null>(null);
@@ -43,9 +48,13 @@ function HomeContent() {
   const [techStack, setTechStack] = useState<TechStack | null>(null);
   const [isRecommendingStack, setIsRecommendingStack] = useState(false);
 
+  // Subscription tier for feature gating
+  const { canAccess, isPro, isEnterprise, tier } = useSubscription();
+
   const searchParams = useSearchParams();
   const router = useRouter();
   const historyId = searchParams.get('historyId');
+
 
   // ... existing useEffects ...
 
@@ -87,7 +96,7 @@ function HomeContent() {
       // Minimum 5s wait for the "Theater" effect, slightly faster
       const [result] = await Promise.all([
         validateIdea(idea, isRoastMode ? 'roast' : 'default'),
-        new Promise(resolve => setTimeout(resolve, 5000))
+        new Promise(resolve => setTimeout(resolve, 6000))
       ]);
 
       setReport(result);
@@ -194,19 +203,13 @@ function HomeContent() {
   return (
     <main className="min-h-screen flex flex-col items-center justify-start p-4 md:p-6 pt-32 md:pt-40 relative pb-24 font-sans selection:bg-blue-500/30">
 
-      {/* Roast Result Overlay */}
-
-
-      <Dock />
+      {/* NavBar and ThemeToggle are now in layout.tsx */}
 
       <div className="bg-aurora" />
 
-      {!report && !isAnalyzing && (
-        <FloatingPivotStories />
-      )}
-
       <div className="max-w-6xl w-full z-10 transition-all duration-700 ease-[0.16,1,0.3,1] flex flex-col items-center">
 
+        {/* Header - Linear Style */}
         {/* Header - Linear Style */}
         {!report && !isAnalyzing && (
           <motion.div
@@ -221,30 +224,30 @@ function HomeContent() {
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2 }}
-              className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-white/10 bg-white/5 backdrop-blur-md mb-4 hover:bg-white/10 transition-colors cursor-default"
+              className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-[var(--card-border)] bg-[var(--card-highlight)] backdrop-blur-md mb-4 hover:bg-[var(--card-border)] transition-colors cursor-default"
             >
               <div className="flex items-center justify-center w-5 h-5 rounded-full bg-indigo-500/20 text-indigo-400">
                 <Zap className="w-3 h-3 fill-indigo-400/50" />
               </div>
-              <span className="text-xs font-semibold text-gray-200 tracking-wide uppercase">
-                Idea Intelligence <span className="text-gray-600 mx-1">//</span> v2.4
+              <span className="text-xs font-semibold text-[var(--foreground)] tracking-wide uppercase">
+                Idea Intelligence <span className="text-[var(--text-secondary)] mx-1">//</span> v2.4
               </span>
             </motion.div>
 
             <div className="relative z-10 space-y-3">
-              <h1 className="text-3xl sm:text-5xl md:text-7xl font-semibold tracking-tighter text-white leading-[1.1]">
+              <h1 className="text-3xl sm:text-5xl md:text-7xl font-semibold tracking-tighter text-[var(--foreground)] leading-[1.1]">
                 <MaskedText text="Validate" delay={0.1} />
-                <span className="text-gray-500 ml-2 md:ml-3 block md:inline">Instantly</span>
+                <span className="text-[var(--text-secondary)] ml-2 md:ml-3 block md:inline">Instantly</span>
               </h1>
 
               <motion.p
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.4 }}
-                className="text-base sm:text-lg text-gray-400 max-w-xl mx-auto font-normal leading-relaxed px-4"
+                className="text-base sm:text-lg text-[var(--text-secondary)] max-w-xl mx-auto font-normal leading-relaxed px-4"
               >
                 Data-driven feedback on your startup idea.{" "}
-                <span className="text-gray-200 block md:inline">No sugar coating. Just truth.</span>
+                <span className="text-[var(--foreground)] block md:inline">No sugar coating. Just truth.</span>
               </motion.p>
             </div>
           </motion.div>
@@ -262,8 +265,10 @@ function HomeContent() {
             >
               <div className="macos-card p-1.5 rounded-2xl relative overflow-visible">
                 <div className={clsx(
-                  "bg-[#050505] rounded-[10px] p-4 md:p-6 border transition-colors duration-500 relative",
-                  isRoastMode ? "border-red-500/20" : "border-white/5"
+                  "rounded-[10px] p-4 md:p-6 border transition-colors duration-500 relative",
+                  isRoastMode
+                    ? "bg-red-50 dark:bg-[#050505] border-red-200 dark:border-red-500/20"
+                    : "bg-[var(--card-bg)] border-[var(--card-border)]"
                 )}>
                   {isRoastMode && (
                     <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-red-500/50 to-transparent opacity-50" />
@@ -274,41 +279,60 @@ function HomeContent() {
                     onChange={(e) => setIdea(e.target.value)}
                     placeholder={isRoastMode ? "Give me your worst idea... I dare you." : "Describe your startup idea..."}
                     className={clsx(
-                      "w-full h-16 md:h-24 bg-transparent border-none text-base md:text-xl placeholder-gray-700 resize-none focus:ring-0 focus:outline-none font-medium leading-relaxed tracking-tight transition-colors",
-                      isRoastMode ? "text-red-50" : "text-white"
+                      "w-full h-16 md:h-24 bg-transparent border-none text-base md:text-xl resize-none focus:ring-0 focus:outline-none font-medium leading-relaxed tracking-tight transition-colors",
+                      isRoastMode
+                        ? "text-red-900 dark:text-red-50 placeholder-red-800/40 dark:placeholder-red-200/30"
+                        : "text-[var(--foreground)] placeholder-[var(--text-secondary)]"
                     )}
                   />
 
-                  <div className="flex flex-row justify-between items-center mt-3 pt-3 md:mt-4 md:pt-4 border-t border-white/5 gap-4">
-                    <div className="flex items-center gap-3 text-xs font-medium text-gray-600 w-auto justify-start">
-                      {/* Simple Clean Toggle */}
-                      <div
-                        onClick={() => setIsRoastMode(!isRoastMode)}
-                        className="flex items-center gap-3 cursor-pointer group select-none"
-                      >
-                        <div className={clsx(
-                          "w-10 h-5 rounded-full p-0.5 transition-colors duration-300 relative border",
-                          isRoastMode
-                            ? "bg-red-900/20 border-red-500/50"
-                            : "bg-white/5 border-white/10 group-hover:border-white/30"
-                        )}>
-                          <motion.div
-                            layout
-                            transition={{ type: "spring", stiffness: 700, damping: 30 }}
-                            className={clsx(
-                              "w-4 h-4 rounded-full shadow-sm",
-                              isRoastMode ? "bg-red-500" : "bg-gray-400"
-                            )}
-                            animate={{ x: isRoastMode ? 20 : 0 }}
-                          />
+                  <div className="flex flex-row justify-between items-center mt-3 pt-3 md:mt-4 md:pt-4 border-t border-[var(--card-border)] gap-4">
+                    <div className="flex items-center gap-3 text-xs font-medium text-[var(--text-secondary)] w-auto justify-start">
+                      {/* Roast Mode Toggle - Enterprise Only */}
+                      {canAccess("enterprise") ? (
+                        <div
+                          onClick={() => setIsRoastMode(!isRoastMode)}
+                          className="flex items-center gap-3 cursor-pointer group select-none"
+                        >
+                          <div className={clsx(
+                            "w-10 h-5 rounded-full p-0.5 transition-colors duration-300 relative border",
+                            isRoastMode
+                              ? "bg-red-100 dark:bg-red-900/20 border-red-300 dark:border-red-500/50"
+                              : "bg-[var(--card-highlight)] border-[var(--card-border)] group-hover:border-[var(--text-secondary)]"
+                          )}>
+                            <motion.div
+                              layout
+                              transition={{ type: "spring", stiffness: 700, damping: 30 }}
+                              className={clsx(
+                                "w-4 h-4 rounded-full shadow-sm",
+                                isRoastMode ? "bg-red-500" : "bg-[var(--text-secondary)]"
+                              )}
+                              animate={{ x: isRoastMode ? 20 : 0 }}
+                            />
+                          </div>
+                          <span className={clsx(
+                            "transition-colors duration-300",
+                            isRoastMode ? "text-red-600 dark:text-red-400 font-semibold" : "text-[var(--text-secondary)] group-hover:text-[var(--foreground)]"
+                          )}>
+                            {isRoastMode ? "🔥 Roast Mode Active" : "Safe Mode"}
+                          </span>
                         </div>
-                        <span className={clsx(
-                          "transition-colors duration-300",
-                          isRoastMode ? "text-red-400 font-semibold" : "text-gray-500 group-hover:text-gray-300"
-                        )}>
-                          {isRoastMode ? "🔥 Roast Mode Active" : "Safe Mode"}
-                        </span>
-                      </div>
+                      ) : (
+                        <button
+                          onClick={() => setShowPricingModal(true)}
+                          className="flex items-center gap-3 cursor-pointer group select-none"
+                        >
+                          <div className="w-10 h-5 rounded-full p-0.5 transition-colors duration-300 relative border bg-purple-500/10 border-purple-500/30">
+                            <div className="w-4 h-4 rounded-full shadow-sm bg-purple-400/50 flex items-center justify-center">
+                              <Lock className="w-2 h-2 text-purple-300" />
+                            </div>
+                          </div>
+                          <span className="text-purple-400 group-hover:text-purple-300 transition-colors flex items-center gap-1.5">
+                            🔥 Roast Mode
+                            <LockedBadge tier="enterprise" />
+                          </span>
+                        </button>
+                      )}
                     </div>
 
                     <button
@@ -316,14 +340,16 @@ function HomeContent() {
                       disabled={!idea.trim() || isAnalyzing}
                       className={clsx(
                         "liquid-button px-4 py-2.5 md:px-6 md:py-3 flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300",
-                        isRoastMode ? "bg-red-600 hover:bg-red-700 hover:shadow-[0_0_20px_rgba(220,38,38,0.4)] text-white border-red-500/50" : ""
+                        isRoastMode
+                          ? "bg-red-500 hover:bg-red-600 hover:shadow-[0_0_20px_rgba(220,38,38,0.4)] text-white border-red-500/50"
+                          : "bg-[var(--foreground)] text-[var(--background)] hover:bg-[var(--text-secondary)]"
                       )}
                     >
                       {isAnalyzing ? (
                         <>
                           <span>{isRoastMode ? "Roasting..." : "Analyzing..."}</span>
                           <Flame className={clsx("w-4 h-4", isRoastMode ? "animate-pulse" : "hidden")} />
-                          {!isRoastMode && <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />}
+                          {!isRoastMode && <div className="w-4 h-4 border-2 border-[var(--background)]/30 border-t-[var(--background)] rounded-full animate-spin" />}
                         </>
                       ) : isRoastMode ? (
                         <>
@@ -352,7 +378,7 @@ function HomeContent() {
             exit={{ opacity: 0 }}
             className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-black/50 backdrop-blur-md"
           >
-            <AnalysisTerminal />
+            <AnalysisTerminal isRoastMode={isRoastMode} />
           </motion.div>
         )}
 
@@ -375,15 +401,15 @@ function HomeContent() {
           >
             {/* Top Actions Header */}
             <motion.div
-              className="md:col-span-4 flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-8 mt-8 border-b border-white/10 pb-6"
+              className="md:col-span-4 flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-8 mt-8 border-b border-[var(--card-border)] pb-6"
               variants={{
                 hidden: { opacity: 0, y: -20 },
                 visible: { opacity: 1, y: 0 }
               }}
             >
               <div>
-                <h2 className="text-3xl font-semibold text-white tracking-tight">Analysis Report</h2>
-                <p className="text-gray-500 text-sm mt-1">Generated {new Date().toLocaleDateString()}</p>
+                <h2 className="text-3xl font-semibold text-[var(--foreground)] tracking-tight">Analysis Report</h2>
+                <p className="text-[var(--text-secondary)] text-sm mt-1">Generated {new Date().toLocaleDateString()}</p>
               </div>
 
               <div className="flex items-center gap-3">
@@ -418,7 +444,7 @@ function HomeContent() {
               <>
                 {/* 1. Sarcastic Verdict (Full Width) */}
                 <motion.div
-                  className="col-span-1 sm:col-span-2 md:col-span-4 macos-card p-6 md:p-8 bg-gradient-to-br from-[#2a0505] via-[#1a0505] to-black border-red-500/50 relative overflow-hidden shadow-[0_0_50px_rgba(220,38,38,0.2)]"
+                  className="col-span-1 sm:col-span-2 md:col-span-4 macos-card p-6 md:p-8 bg-gradient-to-br from-red-50 via-orange-50 to-white dark:from-[#2a0505] dark:via-[#1a0505] dark:to-black border-red-200 dark:border-red-500/50 relative overflow-hidden shadow-[0_0_50px_rgba(220,38,38,0.1)] dark:shadow-[0_0_50px_rgba(220,38,38,0.2)]"
                   variants={{
                     hidden: { opacity: 0, scale: 0.95 },
                     visible: { opacity: 1, scale: 1 }
@@ -432,14 +458,14 @@ function HomeContent() {
                     <Flame className="w-48 h-48 text-orange-600 blur-2xl" />
                   </div>
 
-                  <h3 className="text-sm font-bold uppercase tracking-widest text-red-500 mb-2 flex items-center gap-2">
+                  <h3 className="text-sm font-bold uppercase tracking-widest text-red-600 dark:text-red-500 mb-2 flex items-center gap-2">
                     <Flame className="w-4 h-4" /> The Reality Check
                   </h3>
-                  <h2 className="text-2xl sm:text-3xl md:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-red-500 via-orange-500 to-yellow-500 tracking-tight mb-6 mt-2 leading-[1.2]">
+                  <h2 className="text-2xl sm:text-3xl md:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-red-600 via-orange-600 to-yellow-600 dark:from-red-500 dark:via-orange-500 dark:to-yellow-500 tracking-tight mb-6 mt-2 leading-[1.2]">
                     {report.roast.sarcasticVerdict}
                   </h2>
-                  <div className="p-4 bg-red-950/30 border-l-4 border-red-500 rounded-r-lg backdrop-blur-sm">
-                    <p className="text-lg text-red-100 italic font-medium leading-relaxed">
+                  <div className="p-4 bg-red-100/50 dark:bg-red-950/30 border-l-4 border-red-500 rounded-r-lg backdrop-blur-sm">
+                    <p className="text-lg text-red-900 dark:text-red-100 italic font-medium leading-relaxed">
                       "{report.roast.burn}"
                     </p>
                   </div>
@@ -447,32 +473,32 @@ function HomeContent() {
 
                 {/* 2. Humorous Analogy */}
                 <motion.div
-                  className="col-span-1 md:col-span-2 macos-card p-6 bg-[#120505] border-red-500/30 shadow-[0_0_30px_rgba(220,38,38,0.1)] hover:border-red-500/50 transition-colors"
+                  className="col-span-1 md:col-span-2 macos-card p-6 bg-white dark:bg-[#120505] border-red-200 dark:border-red-500/30 shadow-[0_0_30px_rgba(220,38,38,0.05)] dark:shadow-[0_0_30px_rgba(220,38,38,0.1)] hover:border-red-300 dark:hover:border-red-500/50 transition-colors"
                   variants={{
                     hidden: { opacity: 0, scale: 0.95 },
                     visible: { opacity: 1, scale: 1 }
                   }}
                 >
-                  <h3 className="text-xs font-bold uppercase tracking-wider text-orange-400 mb-3 flex items-center gap-2">
+                  <h3 className="text-xs font-bold uppercase tracking-wider text-orange-600 dark:text-orange-400 mb-3 flex items-center gap-2">
                     <Sparkles className="w-3 h-3" /> The "Analogy"
                   </h3>
-                  <p className="text-gray-200 text-lg font-medium leading-relaxed">
+                  <p className="text-gray-800 dark:text-gray-200 text-lg font-medium leading-relaxed">
                     {report.roast.humorousAnalogy}
                   </p>
                 </motion.div>
 
                 {/* 3. Roast Summary */}
                 <motion.div
-                  className="col-span-1 md:col-span-2 macos-card p-6 bg-[#120505] border-red-500/30 shadow-[0_0_30px_rgba(220,38,38,0.1)] hover:border-red-500/50 transition-colors"
+                  className="col-span-1 md:col-span-2 macos-card p-6 bg-white dark:bg-[#120505] border-red-200 dark:border-red-500/30 shadow-[0_0_30px_rgba(220,38,38,0.05)] dark:shadow-[0_0_30px_rgba(220,38,38,0.1)] hover:border-red-300 dark:hover:border-red-500/50 transition-colors"
                   variants={{
                     hidden: { opacity: 0, scale: 0.95 },
                     visible: { opacity: 1, scale: 1 }
                   }}
                 >
-                  <h3 className="text-xs font-bold uppercase tracking-wider text-orange-400 mb-3 flex items-center gap-2">
+                  <h3 className="text-xs font-bold uppercase tracking-wider text-orange-600 dark:text-orange-400 mb-3 flex items-center gap-2">
                     <AlertTriangle className="w-3 h-3" /> Why It Hurts
                   </h3>
-                  <p className="text-gray-300 leading-relaxed">
+                  <p className="text-gray-700 dark:text-gray-300 leading-relaxed">
                     {report.roast.summary}
                   </p>
                 </motion.div>
@@ -482,30 +508,59 @@ function HomeContent() {
             {/* 1. Verdict (Large) */}
             <motion.div
               className={clsx(
-                "md:col-span-2 md:row-span-2 macos-card p-6 md:p-8 flex flex-col justify-between",
-                // Conditional styling based on report verdict OR mode
-                report.roast ? "border-red-500/20 bg-[#0f0505]" : ""
+                "md:col-span-2 md:row-span-2 relative overflow-hidden rounded-3xl border border-white/[0.08] p-8 md:p-10 flex flex-col justify-between",
+                report.verdict === "Build Now" ? "bg-gradient-to-br from-[#061208] via-[#050f0d] to-[#0a0a0f]" :
+                report.verdict === "Build with Caution" ? "bg-gradient-to-br from-[#120e06] via-[#0f0c05] to-[#0a0a0f]" :
+                "bg-gradient-to-br from-[#120608] via-[#0f0a0a] to-[#0a0808]"
               )}
               variants={{
                 hidden: { opacity: 0, scale: 0.95 },
                 visible: { opacity: 1, scale: 1 }
               }}
             >
-              <div>
-                <h3 className="text-xs font-semibold uppercase tracking-wider text-gray-500 mb-2">Verdict</h3>
+              {/* Background Typography Watermark */}
+              <div className="absolute -top-8 -right-12 text-[140px] md:text-[200px] font-black text-white/[0.02] leading-none tracking-tighter select-none pointer-events-none">
+                {report.verdict === "Build Now" ? "BUILD" : report.verdict === "Build with Caution" ? "CAUTION" : "PIVOT"}
+              </div>
+
+              {/* Ambient Glow */}
+              <div className={clsx(
+                "absolute top-0 left-0 w-[400px] h-[400px] rounded-full blur-[120px] pointer-events-none",
+                report.verdict === "Build Now" ? "bg-emerald-500/10" :
+                report.verdict === "Build with Caution" ? "bg-amber-500/10" : "bg-rose-500/10"
+              )} />
+
+              <div className="relative z-10">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className={clsx(
+                    "w-12 h-12 rounded-2xl border flex items-center justify-center backdrop-blur-sm",
+                    report.verdict === "Build Now" ? "bg-gradient-to-br from-emerald-500/20 to-teal-500/20 border-emerald-500/30" :
+                    report.verdict === "Build with Caution" ? "bg-gradient-to-br from-amber-500/20 to-orange-500/20 border-amber-500/30" :
+                    "bg-gradient-to-br from-rose-500/20 to-red-500/20 border-rose-500/30"
+                  )}>
+                    {report.verdict === "Build Now" ? <Check className="w-6 h-6 text-emerald-300" /> :
+                     report.verdict === "Build with Caution" ? <AlertTriangle className="w-6 h-6 text-amber-300" /> :
+                     <ShieldAlert className="w-6 h-6 text-rose-300" />}
+                  </div>
+                  <span className={clsx(
+                    "inline-flex items-center gap-1.5 px-3 py-1 rounded-full border text-[10px] font-bold uppercase tracking-wider",
+                    report.verdict === "Build Now" ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-300" :
+                    report.verdict === "Build with Caution" ? "bg-amber-500/10 border-amber-500/20 text-amber-300" :
+                    "bg-rose-500/10 border-rose-500/20 text-rose-300"
+                  )}>
+                    Final Verdict
+                  </span>
+                </div>
                 <h2 className={clsx(
-                  "text-3xl sm:text-4xl md:text-5xl font-semibold tracking-tighter break-words",
-                  report.verdict === "Build Now" ? "text-white" :
-                    report.verdict === "Build with Caution" ? "text-gray-200" : "text-gray-400"
+                  "text-5xl sm:text-6xl md:text-7xl font-black tracking-tighter break-words leading-[0.9] mb-6",
+                  report.verdict === "Build Now" ? "text-transparent bg-clip-text bg-gradient-to-r from-emerald-300 via-teal-200 to-emerald-400" :
+                  report.verdict === "Build with Caution" ? "text-transparent bg-clip-text bg-gradient-to-r from-amber-300 via-orange-200 to-amber-400" :
+                  "text-transparent bg-clip-text bg-gradient-to-r from-rose-300 via-red-200 to-rose-400"
                 )}>
                   {report.verdict}
                 </h2>
-                <div className={clsx("h-1 w-20 mt-4 rounded-full",
-                  report.verdict === "Build Now" ? "bg-green-500" :
-                    report.verdict === "Build with Caution" ? "bg-yellow-500" : "bg-red-500"
-                )} />
               </div>
-              <p className="text-lg text-gray-400 leading-relaxed mt-6">
+              <p className="relative z-10 text-base md:text-lg text-gray-300 leading-relaxed">
                 {report.verdictJustification}
               </p>
             </motion.div>
@@ -513,154 +568,293 @@ function HomeContent() {
             {/* 2. Viability Score (Animated Gauge) */}
             <motion.div
               className={clsx(
-                "md:col-span-1 md:row-span-1 macos-card p-6 flex flex-col items-center justify-center",
-                report.roast ? "border-red-500/20 bg-[#0a0202]" : ""
+                "md:col-span-1 md:row-span-1 macos-card p-6 flex flex-col items-center justify-center relative overflow-hidden group",
+                report.roast ? "border-red-200 dark:border-red-500/20 bg-red-50/10 dark:bg-[#0a0202]" : ""
               )}
               variants={{
                 hidden: { opacity: 0, scale: 0.95 },
                 visible: { opacity: 1, scale: 1 }
               }}
             >
+              {/* Background Glow */}
+              <div className={clsx(
+                "absolute inset-0 opacity-20 bg-gradient-to-br transition-opacity duration-700",
+                report.viabilityScore > 70 ? "from-green-500/30 to-transparent" :
+                  report.viabilityScore > 40 ? "from-yellow-500/30 to-transparent" : "from-red-500/30 to-transparent"
+              )} />
+
               <CircularGauge
-                score={report.confidenceScore === 'High' ? 92 : report.confidenceScore === 'Medium' ? 65 : 30}
+                score={report.viabilityScore || 50}
                 label="Viability Score"
-                subLabel="Likelihood of success"
+                subLabel="AI Prediction"
                 isRoastMode={!!report.roast}
               />
             </motion.div>
 
-            {/* 3. Problem Urgency (was Pain Level) */}
+            {/* 3. Problem Urgency */}
             <motion.div
               className={clsx(
-                "md:col-span-1 md:row-span-1 macos-card p-6 flex flex-col justify-between",
-                report.roast ? "border-red-500/20 bg-[#0a0202]" : ""
+                "md:col-span-1 md:row-span-1 macos-card p-6 flex flex-col justify-center gap-4 relative overflow-hidden",
+                report.roast ? "border-red-200 dark:border-red-500/20 bg-red-50/10 dark:bg-[#0a0202]" : "bg-[var(--card-bg)] border-[var(--card-border)]"
               )}
               variants={{
                 hidden: { opacity: 0, scale: 0.95 },
                 visible: { opacity: 1, scale: 1 }
               }}
             >
-              <div className="flex justify-between items-start">
+              <div className="flex justify-between items-end z-10">
                 <div>
-                  <h3 className="text-xs font-semibold uppercase tracking-wider text-gray-500 mb-1">Problem Urgency</h3>
-                  <p className="text-[10px] text-gray-600 font-medium">Do users *need* this?</p>
+                  <h3 className="text-xs font-semibold uppercase tracking-wider text-[var(--text-secondary)] mb-1">Problem Urgency</h3>
+                  <p className="text-[10px] text-[var(--text-secondary)] font-medium leading-tight max-w-[100px]">How bad do they need it?</p>
                 </div>
-                <span className="text-2xl font-bold text-white">{report.problemSeverity}/10</span>
+                <div className="text-right">
+                  <span className={clsx("text-4xl font-bold tracking-tighter",
+                    report.problemSeverity >= 8 ? "text-red-400" :
+                      report.problemSeverity >= 5 ? "text-yellow-400" : "text-blue-400"
+                  )}>
+                    {report.problemSeverity}<span className="text-lg text-[var(--text-secondary)]">/10</span>
+                  </span>
+                </div>
               </div>
-              <div className="flex gap-1 mt-4">
-                {[...Array(10)].map((_, i) => (
-                  <div key={i} className={clsx("h-2 flex-1 rounded-sm",
-                    i < report.problemSeverity ? (report.roast ? "bg-red-500" : "bg-white") : "bg-white/10"
-                  )} />
-                ))}
+
+              {/* Custom Bar Chart Visualization */}
+              <div className="w-full bg-[var(--card-highlight)] h-3 rounded-full overflow-hidden relative z-10">
+                <motion.div
+                  initial={{ width: 0 }}
+                  animate={{ width: `${report.problemSeverity * 10}%` }}
+                  transition={{ duration: 1, delay: 0.5 }}
+                  className={clsx("h-full rounded-full shadow-[0_0_10px_currentColor]",
+                    report.problemSeverity >= 8 ? "bg-red-500 text-red-500" :
+                      report.problemSeverity >= 5 ? "bg-yellow-500 text-yellow-500" : "bg-blue-500 text-blue-500"
+                  )}
+                />
               </div>
             </motion.div>
 
             {/* 4. Main Challenge (was Failure Risk) */}
             <motion.div
-              className={clsx(
-                "md:col-span-2 macos-card p-6 md:p-8",
-                report.roast ? "bg-[#1f0505] border-red-500/30" : "bg-[#1a1212] border-white/10"
-              )}
+              className="md:col-span-2 relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#120608] via-[#0f0505] to-[#0a0808] border border-white/[0.08] p-8 md:p-10"
               variants={{
                 hidden: { opacity: 0, scale: 0.95 },
                 visible: { opacity: 1, scale: 1 }
               }}
             >
-              <h3 className="flex items-center gap-2 text-red-400 font-semibold uppercase tracking-wider text-xs mb-4">
-                <ShieldAlert className="w-3 h-3" /> Biggest Challenge
-              </h3>
-              <p className="text-lg text-gray-300">
-                {report.whyItFails}
-              </p>
+              {/* Background Typography Watermark */}
+              <div className="absolute -bottom-6 -left-8 text-[120px] md:text-[160px] font-black text-white/[0.02] leading-none tracking-tighter select-none pointer-events-none">
+                FAILS
+              </div>
+
+              {/* Ambient Glow */}
+              <div className="absolute top-0 right-0 w-[300px] h-[300px] bg-rose-600/10 rounded-full blur-[100px] pointer-events-none" />
+
+              <div className="relative z-10">
+                <div className="flex items-center gap-3 mb-6">
+                  <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-rose-500/20 to-red-500/20 border border-rose-500/30 flex items-center justify-center backdrop-blur-sm">
+                    <ShieldAlert className="w-6 h-6 text-rose-300" />
+                  </div>
+                  <div>
+                    <h3 className="text-2xl md:text-3xl font-black tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-rose-300 to-red-300">
+                      Biggest Challenge
+                    </h3>
+                    <p className="text-xs text-gray-400 mt-0.5">Why most similar ideas fail</p>
+                  </div>
+                </div>
+                <div className="p-6 rounded-2xl border border-rose-500/20 bg-gradient-to-br from-rose-500/5 to-red-500/5 backdrop-blur-sm">
+                  <p className="text-base md:text-lg text-gray-200 leading-relaxed">
+                    {report.whyItFails}
+                  </p>
+                </div>
+              </div>
             </motion.div>
 
             {/* 5. Summary */}
             <motion.div
-              className={clsx(
-                "md:col-span-2 md:row-span-2 macos-card p-6 md:p-8",
-                report.roast ? "border-red-500/20 bg-[#0f0a0a]" : ""
-              )}
+              className="md:col-span-2 md:row-span-2 relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#060810] via-[#050d10] to-[#0a0a0f] border border-white/[0.08] p-8 md:p-10"
               variants={{
                 hidden: { opacity: 0, scale: 0.95 },
                 visible: { opacity: 1, scale: 1 }
               }}
             >
-              <h3 className="text-xs font-semibold uppercase tracking-wider text-gray-500 mb-6">Executive Summary</h3>
-              <p className="text-gray-300 leading-7 mb-8">
-                {report.summary}
-              </p>
+              {/* Background Typography Watermark */}
+              <div className="absolute -top-6 -right-10 text-[120px] md:text-[180px] font-black text-white/[0.02] leading-none tracking-tighter select-none pointer-events-none">
+                EXEC
+              </div>
 
-              <div className="border-t border-white/5 pt-6">
-                <h4 className="text-xs text-gray-500 uppercase font-semibold mb-2">Target Audience</h4>
-                <p className="text-white mb-6">{report.targetUsers}</p>
+              {/* Ambient Glow */}
+              <div className="absolute bottom-0 left-0 w-[350px] h-[350px] bg-blue-600/8 rounded-full blur-[120px] pointer-events-none" />
 
-                <div className="mt-4 p-3 rounded bg-blue-500/5 border border-blue-500/10 flex items-start gap-2">
-                  <div className="min-w-[4px] h-full rounded-full bg-blue-500/40" />
+              <div className="relative z-10">
+                <div className="flex items-center gap-3 mb-8">
+                  <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-blue-500/20 to-indigo-500/20 border border-blue-500/30 flex items-center justify-center backdrop-blur-sm">
+                    <BarChart3 className="w-6 h-6 text-blue-300" />
+                  </div>
                   <div>
-                    <h5 className="text-[10px] uppercase font-bold text-blue-300 mb-1">Source Transparency</h5>
-                    <div className="text-[11px] text-gray-400 leading-tight">
+                    <h3 className="text-3xl md:text-4xl font-black tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-blue-300 via-indigo-200 to-blue-400">
+                      Executive Summary
+                    </h3>
+                  </div>
+                </div>
+                
+                <div className="p-6 rounded-2xl border border-blue-500/10 bg-gradient-to-br from-blue-500/5 to-indigo-500/5 backdrop-blur-sm mb-6">
+                  <p className="text-gray-200 leading-relaxed text-base">
+                    {report.summary}
+                  </p>
+                </div>
+
+                <div className="pt-6 border-t border-white/[0.08]">
+                  <h4 className="text-xs text-blue-300 uppercase font-bold mb-3 tracking-wider flex items-center gap-2">
+                    <Users className="w-3 h-3" /> Target Audience
+                  </h4>
+                  <p className="text-white/90 text-sm leading-relaxed mb-6">{report.targetUsers}</p>
+
+                {/* Aesthetic Market Intelligence Section */}
+                <div className="mt-6 rounded-xl bg-[var(--card-highlight)] border border-blue-500/20 overflow-hidden relative group">
+                  {/* Glowing accent */}
+                  <div className="absolute top-0 left-0 w-1 h-full bg-blue-500" />
+                  <div className="absolute top-0 left-1 w-full h-full bg-blue-500/5" />
+
+                  <div className="p-5 relative z-10">
+                    <div className="flex items-center gap-2 mb-3">
+                      <div className="p-1.5 rounded-md bg-blue-500/10 text-blue-500">
+                        <Map className="w-3.5 h-3.5" />
+                      </div>
+                      <h5 className="text-xs uppercase font-bold text-blue-500 tracking-wide">
+                        Market Intelligence (2025-26)
+                      </h5>
+                    </div>
+
+                    <div className="space-y-4">
                       {report.marketTrends ? (
                         <>
-                          <span className="text-gray-300 block mb-2 font-medium">Market Context (2025-26): {report.marketTrends}</span>
+                          <div className="text-sm text-[var(--text-secondary)] leading-relaxed font-medium pl-1">
+                            {report.marketTrends}
+                          </div>
 
                           {report.sources && report.sources.length > 0 && (
-                            <div className="mt-2 pt-2 border-t border-blue-500/20">
-                              <span className="text-[10px] uppercase font-bold text-blue-300 block mb-1.5 opacity-80">Trusted Verification Sources</span>
-                              <div className="flex flex-col gap-1.5">
-                                {report.sources.map((source, idx) => (
-                                  <div key={idx} className="flex items-center gap-1.5 text-blue-200/90 hover:text-blue-100 transition-colors">
-                                    <span className="w-1 h-1 rounded-full bg-blue-400 flex-shrink-0" />
-                                    <span className="truncate">{source}</span>
-                                  </div>
-                                ))}
+                            <div className="mt-4 pt-4 border-t border-blue-500/15">
+                              <span className="text-[10px] uppercase font-bold text-blue-500/70 mb-3 flex items-center gap-2 tracking-wider">
+                                <Search className="w-3 h-3" /> Verified Sources
+                              </span>
+                              <div className="flex flex-col gap-2">
+                                {report.sources.map((source, idx) => {
+                                  // Simple parsing: Try to split by common separators or find URL
+                                  const urlMatch = source.match(/(https?:\/\/[^\s]+)/);
+                                  const url = urlMatch ? urlMatch[0] : null;
+                                  let domain = url ? new URL(url).hostname.replace('www.', '') : null;
+                                  const text = source.replace(url || "", "").replace(/[-:]\s*$/, "").trim() || (domain ? domain.charAt(0).toUpperCase() + domain.slice(1) : "Source " + (idx + 1));
+
+                                  return (
+                                    <a
+                                      key={idx}
+                                      href={url || "#"}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="flex items-start gap-3 p-2.5 rounded-lg bg-blue-500/5 border border-blue-500/10 hover:bg-blue-500/10 hover:border-blue-500/30 transition-all group/link"
+                                    >
+                                      <div className="mt-0.5 text-blue-500 group-hover/link:text-blue-600 transition-colors">
+                                        <ExternalLink className="w-3.5 h-3.5" />
+                                      </div>
+                                      <div className="flex-1 min-w-0">
+                                        <div className="text-xs text-[var(--foreground)] font-medium truncate group-hover/link:text-blue-600 transition-colors">
+                                          {text}
+                                        </div>
+                                        {url && (
+                                          <div className="text-[10px] text-blue-500/60 truncate mt-0.5 font-mono">
+                                            {new URL(url).hostname}
+                                          </div>
+                                        )}
+                                      </div>
+                                    </a>
+                                  );
+                                })}
                               </div>
                             </div>
                           )}
                         </>
                       ) : (
-                        "This analysis is verified against real-time patterns from millions of startup case studies, current market trends (2025-26), and established business frameworks (Lean Startup)."
+                        <div className="text-xs text-gray-500 italic">
+                          Analysis based on general market models. Run a fresh check for real-time sources.
+                        </div>
                       )}
                     </div>
                   </div>
                 </div>
+                </div>
               </div>
             </motion.div>
 
-            {/* 6. Demand Strength (was Market Demand) */}
+            {/* 6. Demand Strength */}
             <motion.div
               className={clsx(
-                "macos-card p-6 flex flex-col justify-between",
-                report.roast ? "border-red-500/20 bg-[#0a0202]" : ""
+                "macos-card p-6 flex flex-col justify-between relative overflow-hidden group",
+                report.roast ? "border-red-200 dark:border-red-500/20 bg-red-50/10 dark:bg-[#0a0202]" : "bg-[var(--card-bg)] border-[var(--card-border)]"
               )}
               variants={{
                 hidden: { opacity: 0, scale: 0.95 },
                 visible: { opacity: 1, scale: 1 }
               }}
             >
-              <div>
-                <h3 className="text-xs font-semibold uppercase tracking-wider text-gray-500 mb-1">Demand Strength</h3>
-                <p className="text-[10px] text-gray-600 font-medium">Are people searching?</p>
-              </div>
-              <div className="mt-4">
-                <h3 className="text-xl font-bold text-white mb-1">{report.marketDemand}</h3>
-                <div className="flex gap-1 mt-2">
-                  <div className={clsx("h-1 w-8 rounded-full", report.roast ? "bg-red-500" : "bg-white")} />
-                  <div className={clsx("h-1 w-8 rounded-full",
-                    ["Medium", "High"].includes(report.marketDemand) ? (report.roast ? "bg-red-500" : "bg-white") : "bg-white/10"
-                  )} />
-                  <div className={clsx("h-1 w-8 rounded-full",
-                    report.marketDemand === "High" ? (report.roast ? "bg-red-500" : "bg-white") : "bg-white/10"
-                  )} />
+              <div className="flex justify-between items-start z-10">
+                <div>
+                  <h3 className="text-xs font-semibold uppercase tracking-wider text-[var(--text-secondary)] mb-1">Demand Strength</h3>
+                  <p className="text-[10px] text-[var(--text-secondary)] font-medium">Search Volume Interest</p>
                 </div>
+                <div className={clsx(
+                  "p-2 rounded-lg bg-opacity-10 backdrop-blur-sm",
+                  report.marketDemand === "High" ? "bg-green-500 text-green-400" :
+                    report.marketDemand === "Medium" ? "bg-yellow-500 text-yellow-400" : "bg-red-500 text-red-400"
+                )}>
+                  {report.marketDemand === "High" ? <TrendingUp className="w-5 h-5" /> :
+                    report.marketDemand === "Medium" ? <Minus className="w-5 h-5" /> : <TrendingDown className="w-5 h-5" />}
+                </div>
+              </div>
+
+              <div className="mt-6 z-10">
+                <h3 className={clsx("text-3xl font-bold mb-2 tracking-tight",
+                  report.marketDemand === "High" ? "text-green-500" :
+                    report.marketDemand === "Medium" ? "text-yellow-500" : "text-red-500"
+                )}>
+                  {report.marketDemand}
+                </h3>
+
+                {/* Signal Bars Visualization */}
+                <div className="flex items-end gap-1.5 h-12 mb-2">
+                  {[1, 2, 3, 4, 5].map((bar) => {
+                    const isActive =
+                      (report.marketDemand === "High" && bar <= 5) ||
+                      (report.marketDemand === "Medium" && bar <= 3) ||
+                      (report.marketDemand === "Low" && bar <= 1);
+
+                    return (
+                      <motion.div
+                        key={bar}
+                        initial={{ height: "20%" }}
+                        animate={{ height: `${bar * 20}%` }}
+                        transition={{ delay: 0.2 + (bar * 0.1) }}
+                        className={clsx(
+                          "w-full rounded-sm transition-colors duration-500",
+                          isActive ? (
+                            report.marketDemand === "High" ? "bg-green-500" :
+                              report.marketDemand === "Medium" ? "bg-yellow-500" : "bg-red-500"
+                          ) : "bg-white/5"
+                        )}
+                      />
+                    );
+                  })}
+                </div>
+                {report.demandJustification && (
+                  <p className="text-[10px] text-gray-400 line-clamp-2 leading-tight mt-2 opacity-80">
+                    {report.demandJustification}
+                  </p>
+                )}
               </div>
             </motion.div>
 
-            {/* 7. Roadmap Button */}
+            {/* 7. Roadmap Button - Feature Card Style */}
             <motion.div
               className={clsx(
-                "macos-card p-6 flex flex-col justify-center items-center text-center cursor-pointer transition-colors group",
-                report.roast ? "border-red-500/20 bg-[#0f0505] hover:bg-red-950/30" : "hover:bg-white/5"
+                "macos-card p-0 flex flex-col justify-center items-center text-center cursor-pointer transition-all duration-300 group relative overflow-hidden",
+                report.roast ? "border-red-200 dark:border-red-500/20 bg-red-50/10 dark:bg-[#0f0505] hover:bg-red-100 dark:hover:bg-red-950/30" : "hover:border-blue-500/40"
               )}
               variants={{
                 hidden: { opacity: 0, scale: 0.95 },
@@ -668,174 +862,523 @@ function HomeContent() {
               }}
               onClick={roadmap ? () => setShowRoadmapModal(true) : handleGenerateRoadmap}
             >
-              <Map className={clsx(
-                "w-8 h-8 transition-colors mb-2",
-                report.roast ? "text-red-400 group-hover:text-red-300" : "text-gray-400 group-hover:text-white"
-              )} />
-              <span className="font-medium text-white">{roadmap ? "View Roadmap" : "Create Roadmap"}</span>
-              {isGeneratingRoadmap && <div className={clsx("mt-2 w-4 h-4 border-2 border-t-transparent rounded-full animate-spin", report.roast ? "border-red-500" : "border-white")} />}
-            </motion.div>
+              {/* Animated Gradient Background on Hover */}
+              <div className="absolute inset-0 bg-gradient-to-br from-blue-600/0 via-violet-600/0 to-blue-600/0 group-hover:from-blue-600/10 group-hover:via-violet-600/10 group-hover:to-blue-600/10 transition-all duration-500" />
 
-            {/* 8. Risks */}
-            <motion.div
-              className={clsx(
-                "md:col-span-2 macos-card p-6 md:p-8",
-                report.roast ? "border-red-500/20 bg-[#0f0a0a]" : ""
-              )}
-              variants={{
-                hidden: { opacity: 0, scale: 0.95 },
-                visible: { opacity: 1, scale: 1 }
-              }}
-            >
-              <h3 className="text-xs font-semibold uppercase tracking-wider text-gray-500 mb-4">Potential Risks</h3>
-              <p className="text-gray-300">
-                {report.risks}
-              </p>
-            </motion.div>
+              <div className="p-6 md:p-8 flex flex-col items-center z-10 w-full h-full justify-center">
+                <div className={clsx(
+                  "w-14 h-14 rounded-2xl flex items-center justify-center mb-4 transition-transform group-hover:scale-110 duration-300 shadow-lg",
+                  report.roast ? "bg-red-500/10 text-red-500" : "bg-blue-500/10 text-blue-400 group-hover:bg-blue-500 group-hover:text-white"
+                )}>
+                  {isGeneratingRoadmap ? (
+                    <RefreshCw className="w-7 h-7 animate-spin" />
+                  ) : (
+                    <Map className="w-7 h-7" />
+                  )}
+                </div>
 
-            {/* 9. Monetization */}
-            <motion.div
-              className={clsx(
-                "md:col-span-2 macos-card p-6 md:p-8",
-                report.roast ? "border-red-500/20 bg-[#0f0a0a]" : ""
-              )}
-              variants={{
-                hidden: { opacity: 0, scale: 0.95 },
-                visible: { opacity: 1, scale: 1 }
-              }}
-            >
-              <h3 className={clsx("text-xs font-semibold uppercase tracking-wider mb-4", report.roast ? "text-red-400/80" : "text-green-500/80")}>Monetization</h3>
-              <div className="flex flex-wrap gap-2">
-                {report.monetizationPaths?.map((path, i) => (
-                  <span key={i} className={clsx("px-3 py-1.5 border rounded-md text-sm text-gray-300", report.roast ? "border-red-500/20 bg-red-950/10" : "border-white/10")}>
-                    {path}
-                  </span>
-                ))}
-              </div>
-            </motion.div>
+                <h3 className={clsx("text-lg font-bold mb-1 transition-colors", roadmap ? "text-green-400" : "text-white")}>
+                  {roadmap ? "Plan Ready" : "Generate Roadmap"}
+                </h3>
 
-            {/* 10. Competitors */}
-            <motion.div
-              className={clsx(
-                "md:col-span-2 macos-card p-6 md:p-8",
-                report.roast ? "border-red-500/20 bg-[#0f0a0a]" : ""
-              )}
-              variants={{
-                hidden: { opacity: 0, scale: 0.95 },
-                visible: { opacity: 1, scale: 1 }
-              }}
-            >
-              <h3 className={clsx("text-xs font-semibold uppercase tracking-wider mb-4", report.roast ? "text-red-400/80" : "text-blue-500/80")}>Competitors</h3>
-              <div className="flex flex-wrap gap-3">
-                {report.alternatives?.map((alt, i) => (
-                  <div key={i} className={clsx(
-                    "pl-1.5 pr-3 py-1.5 border rounded-full text-sm text-gray-300 flex items-center gap-2 transition-colors cursor-default",
-                    report.roast ? "border-red-500/10 bg-red-950/10 hover:bg-red-900/20" : "border-white/10 bg-white/5 hover:bg-white/10"
-                  )}>
-                    <img
-                      src={`https://www.google.com/s2/favicons?domain=${alt.toLowerCase().replace(/\s+/g, '')}.com&sz=64`}
-                      alt={alt}
-                      className="w-5 h-5 rounded-full opacity-90"
-                      onError={(e) => {
-                        (e.target as HTMLImageElement).style.display = 'none';
-                      }}
-                    />
-                    <span>{alt}</span>
+                <p className="text-xs text-gray-500 group-hover:text-gray-400 transition-colors">
+                  {roadmap ? "Click to view your strategy" : "Create a 4-week execution plan"}
+                </p>
+
+                {!roadmap && !isGeneratingRoadmap && (
+                  <div className="mt-4 opacity-0 group-hover:opacity-100 transform translate-y-2 group-hover:translate-y-0 transition-all duration-300">
+                    <span className="text-[10px] font-bold uppercase tracking-widest text-blue-400 flex items-center gap-1">
+                      Start Building <ArrowRight className="w-3 h-3" />
+                    </span>
                   </div>
-                ))}
+                )}
               </div>
             </motion.div>
 
-            {/* New Analysis Sections - refined to Linear style */}
+            {/* 8. Risks - Alert Style */}
             <motion.div
-              className="md:col-span-4 grid grid-cols-1 md:grid-cols-2 gap-4 mt-6"
+              className="md:col-span-2 relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#120a06] via-[#0f0805] to-[#0a0808] border border-white/[0.08] p-8 md:p-10"
+              variants={{
+                hidden: { opacity: 0, scale: 0.95 },
+                visible: { opacity: 1, scale: 1 }
+              }}
+            >
+              {/* Background Typography Watermark */}
+              <div className="absolute -top-6 -right-10 text-[120px] md:text-[180px] font-black text-white/[0.02] leading-none tracking-tighter select-none pointer-events-none">
+                THREATS
+              </div>
+
+              {/* Ambient Glow */}
+              <div className="absolute top-0 left-0 w-[350px] h-[350px] bg-orange-600/10 rounded-full blur-[120px] pointer-events-none" />
+
+              <div className="relative z-10">
+                <div className="flex items-center gap-3 mb-8">
+                  <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-orange-500/20 to-amber-500/20 border border-orange-500/30 flex items-center justify-center backdrop-blur-sm">
+                    <AlertTriangle className="w-6 h-6 text-orange-300" />
+                  </div>
+                  <div>
+                    <h3 className="text-3xl md:text-4xl font-black tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-orange-300 via-amber-200 to-orange-400">
+                      Potential Risks
+                    </h3>
+                    <p className="text-xs text-gray-400 mt-1">What could go wrong</p>
+                  </div>
+                </div>
+
+                <div className="space-y-4">
+                  {report.risks.split(/(?:\. |\n- )/).map((risk, i) => {
+                    const cleanRisk = risk.replace(/^- /, '').trim();
+                    if (!cleanRisk) return null;
+                    return (
+                      <div key={i} className="group flex gap-4 items-start p-5 rounded-2xl bg-gradient-to-br from-orange-500/5 to-amber-500/5 border border-orange-500/10 hover:border-orange-500/30 transition-all duration-300 backdrop-blur-sm">
+                        <div className="w-10 h-10 rounded-xl bg-orange-500/10 border border-orange-500/20 flex items-center justify-center flex-shrink-0">
+                          <AlertOctagon className="w-5 h-5 text-orange-400" />
+                        </div>
+                        <span className="text-sm text-gray-200 leading-relaxed group-hover:text-white transition-colors flex-1">{cleanRisk}</span>
+                      </div>
+                    )
+                  })}
+                </div>
+              </div>
+            </motion.div>
+
+            {/* 9. Monetization - Premium Revenue Stream Cards */}
+            <motion.div
+              className={clsx(
+                "md:col-span-2 relative overflow-hidden rounded-3xl",
+                report.roast
+                  ? "bg-gradient-to-br from-[#120608] via-[#0f0a0a] to-[#0a0808] border border-white/[0.08]"
+                  : "bg-gradient-to-br from-[#061208] via-[#060f0d] to-[#0a0a0f] border border-white/[0.08]"
+              )}
+              variants={{
+                hidden: { opacity: 0, scale: 0.95 },
+                visible: { opacity: 1, scale: 1 }
+              }}
+            >
+              {/* Background Typography Watermark */}
+              <div className="absolute -top-4 -right-8 text-[120px] md:text-[160px] font-black text-white/[0.02] leading-none tracking-tighter select-none pointer-events-none">
+                MONEY
+              </div>
+
+              {/* Glow Effect */}
+              <div className={clsx(
+                "absolute top-0 right-0 w-[300px] h-[300px] rounded-full blur-[100px] pointer-events-none",
+                report.roast ? "bg-red-500/8" : "bg-emerald-500/10"
+              )} />
+
+              <div className="p-8 md:p-10 relative z-10">
+                <div className="flex items-start justify-between mb-10">
+                  <div>
+                    <div className="flex items-center gap-3 mb-3">
+                      <div className={clsx(
+                        "w-12 h-12 rounded-2xl border flex items-center justify-center backdrop-blur-sm",
+                        report.roast
+                          ? "bg-gradient-to-br from-red-500/20 to-orange-500/20 border-red-500/30"
+                          : "bg-gradient-to-br from-emerald-500/20 to-teal-500/20 border-emerald-500/30"
+                      )}>
+                        <DollarSign className="w-6 h-6 text-emerald-300" />
+                      </div>
+                    </div>
+                    <h3 className="text-4xl md:text-5xl font-black tracking-tight leading-[0.95] mb-2">
+                      <span className={clsx(
+                        "text-transparent bg-clip-text",
+                        report.roast
+                          ? "bg-gradient-to-r from-red-300 via-orange-200 to-red-400"
+                          : "bg-gradient-to-r from-emerald-300 via-teal-200 to-emerald-400"
+                      )}>
+                        Monetization
+                      </span>
+                      <br />
+                      <span className="text-white/90">Strategy</span>
+                    </h3>
+                    <p className="text-sm text-gray-400">{report.monetizationPaths?.length || 0} revenue streams</p>
+                  </div>
+                </div>
+
+                <div className="space-y-4">
+                  {report.monetizationPaths?.map((path, i) => (
+                    <div key={i} className={clsx(
+                      "group flex items-center gap-4 p-5 rounded-2xl border transition-all duration-300 hover:scale-[1.01] backdrop-blur-sm",
+                      report.roast
+                        ? "border-red-500/10 bg-gradient-to-br from-red-500/5 to-orange-500/5 hover:border-red-500/30"
+                        : "border-emerald-500/10 bg-gradient-to-br from-emerald-500/5 to-teal-500/5 hover:border-emerald-500/30"
+                    )}>
+                      {/* Number Badge */}
+                      <div className={clsx(
+                        "w-10 h-10 rounded-xl flex items-center justify-center text-sm font-black flex-shrink-0 border",
+                        report.roast
+                          ? "bg-gradient-to-br from-red-500/20 to-orange-500/20 text-red-200 border-red-500/20"
+                          : "bg-gradient-to-br from-emerald-500/20 to-teal-500/20 text-emerald-200 border-emerald-500/20"
+                      )}>
+                        {i + 1}
+                      </div>
+                      <span className="text-sm font-medium text-gray-200 group-hover:text-white transition-colors flex-1 leading-relaxed">
+                        {path}
+                      </span>
+                      <ArrowRight className={clsx(
+                        "w-5 h-5 opacity-0 group-hover:opacity-100 transition-all duration-300 group-hover:translate-x-1 flex-shrink-0",
+                        report.roast ? "text-red-300" : "text-emerald-300"
+                      )} />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </motion.div>
+
+            {/* 10. Competitors - Premium Brand Cards */}
+            <motion.div
+              className={clsx(
+                "md:col-span-2 relative overflow-hidden rounded-3xl",
+                report.roast
+                  ? "bg-gradient-to-br from-[#0c0612] via-[#0a0510] to-[#08080c] border border-white/[0.08]"
+                  : "bg-gradient-to-br from-[#060810] via-[#050d10] to-[#0a0a0f] border border-white/[0.08]"
+              )}
+              variants={{
+                hidden: { opacity: 0, scale: 0.95 },
+                visible: { opacity: 1, scale: 1 }
+              }}
+            >
+              {/* Background Typography Watermark */}
+              <div className="absolute -top-4 -right-8 text-[120px] md:text-[160px] font-black text-white/[0.02] leading-none tracking-tighter select-none pointer-events-none">
+                RIVALS
+              </div>
+
+              {/* Glow Effect */}
+              <div className={clsx(
+                "absolute bottom-0 left-0 w-[300px] h-[300px] rounded-full blur-[100px] pointer-events-none",
+                report.roast ? "bg-red-500/8" : "bg-blue-500/10"
+              )} />
+
+              <div className="p-8 md:p-10 relative z-10">
+                <div className="flex items-start justify-between mb-10">
+                  <div>
+                    <div className="flex items-center gap-3 mb-3">
+                      <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-blue-500/20 to-indigo-500/20 border border-blue-500/30 flex items-center justify-center backdrop-blur-sm">
+                        <Globe className="w-6 h-6 text-blue-300" />
+                      </div>
+                    </div>
+                    <h3 className="text-4xl md:text-5xl font-black tracking-tight leading-[0.95] mb-2">
+                      <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-300 via-indigo-200 to-blue-400">
+                        Major
+                      </span>
+                      <br />
+                      <span className="text-white/90">Competitors</span>
+                    </h3>
+                    <p className="text-sm text-gray-400">{report.alternatives?.length || 0} players found</p>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {report.alternatives?.map((comp, i) => {
+                    const urlMatch = comp.match(/(https?:\/\/[^\s]+)/);
+                    const url = urlMatch ? urlMatch[0] : null;
+                    const name = comp.replace(url || "", "").replace(/[\(\):]/g, "").trim() || "Competitor " + (i + 1);
+                    const domain = url ? new URL(url).hostname : null;
+                    const favicon = domain ? `https://www.google.com/s2/favicons?domain=${domain}&sz=64` : null;
+
+                    return (
+                      <a
+                        key={i}
+                        href={url || `https://www.google.com/search?q=${encodeURIComponent(name)}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="group flex items-center gap-4 p-5 rounded-2xl bg-gradient-to-br from-white/[0.03] to-white/[0.01] border border-white/[0.08] hover:border-blue-500/30 hover:bg-white/[0.05] transition-all duration-300 backdrop-blur-sm"
+                      >
+                        {/* Brand Icon */}
+                        <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-white/5 to-white/[0.02] border border-white/10 flex items-center justify-center overflow-hidden flex-shrink-0 group-hover:border-blue-500/30 transition-colors">
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          {favicon ? (
+                            <img src={favicon} alt={name} className="w-6 h-6 object-contain opacity-70 group-hover:opacity-100 transition-opacity" />
+                          ) : (
+                            <Building2 className="w-5 h-5 text-gray-500 group-hover:text-blue-400 transition-colors" />
+                          )}
+                        </div>
+
+                        <div className="flex-1 min-w-0">
+                          <h4 className="text-sm font-bold text-gray-200 group-hover:text-white truncate transition-colors mb-1">
+                            {name}
+                          </h4>
+                          <p className="text-[10px] text-blue-400/60 group-hover:text-blue-400/90 truncate font-mono transition-colors">
+                            {domain || "Search on Google ↗"}
+                          </p>
+                        </div>
+
+                        <ExternalLink className="w-4 h-4 text-gray-600 group-hover:text-blue-400 transition-colors flex-shrink-0" />
+                      </a>
+                    );
+                  })}
+                </div>
+              </div>
+            </motion.div>
+            {/* Premium Tools Section - Bold Typography Design */}
+            <motion.div
+              className="md:col-span-4 mt-16"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 1.1 }}
             >
-              <button
-                onClick={handleAnalyzeCompetitors}
-                disabled={isAnalyzingCompetitors}
-                className="macos-card p-6 flex items-center justify-between hover:bg-white/5 transition-all disabled:opacity-50 group"
-              >
-                <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center group-hover:border-white/20 transition-colors">
-                    <Target className="w-5 h-5 text-gray-400 group-hover:text-white transition-colors" />
-                  </div>
-                  <div className="text-left">
-                    <h4 className="font-semibold text-white">Competitive Analysis</h4>
-                    <p className="text-sm text-gray-500">Analyze market positioning</p>
-                  </div>
-                </div>
-                {isAnalyzingCompetitors ? (
-                  <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                ) : (
-                  <ArrowRight className="w-5 h-5 text-gray-600 group-hover:text-white transition-colors" />
-                )}
-              </button>
+              {/* Section Header - Minimal */}
+              <div className="flex items-center gap-4 mb-10">
+                <div className="h-[1px] flex-1 bg-gradient-to-r from-transparent via-white/10 to-transparent" />
+                <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-gray-500">Premium Tools</span>
+                <div className="h-[1px] flex-1 bg-gradient-to-r from-transparent via-white/10 to-transparent" />
+              </div>
 
-              <button
-                onClick={handleCalculateMarketSize}
-                disabled={isCalculatingMarket}
-                className="macos-card p-6 flex items-center justify-between hover:bg-white/5 transition-all disabled:opacity-50 group"
-              >
-                <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center group-hover:border-white/20 transition-colors">
-                    <BarChart3 className="w-5 h-5 text-gray-400 group-hover:text-white transition-colors" />
-                  </div>
-                  <div className="text-left">
-                    <h4 className="font-semibold text-white">Market Size Calculator</h4>
-                    <p className="text-sm text-gray-500">TAM, SAM, SOM analysis</p>
-                  </div>
-                </div>
-                {isCalculatingMarket ? (
-                  <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                ) : (
-                  <ArrowRight className="w-5 h-5 text-gray-600 group-hover:text-white transition-colors" />
-                )}
-              </button>
+              {/* Typography-First Bento Grid */}
+              <div className="grid grid-cols-1 md:grid-cols-12 gap-5">
 
-              <button
-                onClick={handleGenerateBrandVibe}
-                disabled={isGeneratingVibe}
-                className="macos-card p-6 flex items-center justify-between hover:bg-white/5 transition-all disabled:opacity-50 group"
-              >
-                <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-indigo-500/10 to-purple-500/10 border border-indigo-500/20 flex items-center justify-center group-hover:border-indigo-500/40 transition-colors">
-                    <Palette className="w-5 h-5 text-indigo-400 group-hover:text-indigo-200 transition-colors" />
-                  </div>
-                  <div className="text-left">
-                    <h4 className="font-semibold text-white">Brand Vibe Check</h4>
-                    <p className="text-sm text-gray-500">Generate aesthetic & slogan</p>
-                  </div>
-                </div>
-                {isGeneratingVibe ? (
-                  <div className="w-5 h-5 border-2 border-indigo-400/30 border-t-indigo-400 rounded-full animate-spin" />
-                ) : (
-                  <ArrowRight className="w-5 h-5 text-gray-600 group-hover:text-white transition-colors" />
-                )}
-              </button>
+                {/* Competitive Analysis - Hero Card (spans 7 cols) */}
+                {canAccess("enterprise") ? (
+                  <button
+                    onClick={handleAnalyzeCompetitors}
+                    disabled={isAnalyzingCompetitors}
+                    className="md:col-span-7 group relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#0c0612] via-[#0a0510] to-[#08080c] border border-white/[0.08] hover:border-violet-500/30 transition-all duration-700 p-8 md:p-10 min-h-[280px] flex flex-col justify-between text-left"
+                  >
+                    {/* Background Typography */}
+                    <div className="absolute -top-4 -right-4 text-[120px] md:text-[180px] font-black text-white/[0.04] leading-none tracking-tighter select-none pointer-events-none">
+                      COMPETE
+                    </div>
 
-              <button
-                onClick={handleRecommendTechStack}
-                disabled={isRecommendingStack}
-                className="macos-card p-6 flex items-center justify-between hover:bg-white/5 transition-all disabled:opacity-50 group"
-              >
-                <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-cyan-500/10 to-blue-500/10 border border-cyan-500/20 flex items-center justify-center group-hover:border-cyan-500/40 transition-colors">
-                    <Layers className="w-5 h-5 text-cyan-400 group-hover:text-cyan-200 transition-colors" />
-                  </div>
-                  <div className="text-left">
-                    <h4 className="font-semibold text-white">Tech Stack Recommender</h4>
-                    <p className="text-sm text-gray-500">Get the best tools for the job</p>
-                  </div>
-                </div>
-                {isRecommendingStack ? (
-                  <div className="w-5 h-5 border-2 border-cyan-400/30 border-t-cyan-400 rounded-full animate-spin" />
+                    {/* Ambient Glow */}
+                    <div className="absolute top-0 right-0 w-[300px] h-[300px] bg-violet-600/20 rounded-full blur-[120px] opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
+
+                    <div className="relative z-10">
+                      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-violet-500/10 border border-violet-500/20 text-[10px] font-bold text-violet-300 uppercase tracking-wider mb-6">
+                        Enterprise
+                      </span>
+
+                      {/* Hero Typography */}
+                      <h3 className="text-4xl md:text-5xl lg:text-6xl font-black tracking-tight leading-[0.9] mb-4">
+                        <span className="text-transparent bg-clip-text bg-gradient-to-r from-violet-300 via-purple-200 to-violet-400 group-hover:from-violet-200 group-hover:to-purple-300 transition-all duration-500">
+                          Competitive
+                        </span>
+                        <br />
+                        <span className="text-white/90">Analysis</span>
+                      </h3>
+
+                      <p className="text-sm text-gray-400 max-w-xs leading-relaxed group-hover:text-gray-300 transition-colors">
+                        Deep market intelligence. Competitor mapping. Strategic opportunities.
+                      </p>
+                    </div>
+
+                    <div className="relative z-10 flex items-center gap-3 text-violet-300 group-hover:text-violet-200 transition-colors">
+                      {isAnalyzingCompetitors ? (
+                        <>
+                          <div className="w-5 h-5 border-2 border-violet-400/30 border-t-violet-400 rounded-full animate-spin" />
+                          <span className="text-sm font-semibold">Analyzing...</span>
+                        </>
+                      ) : (
+                        <>
+                          <span className="text-sm font-semibold">Run Analysis</span>
+                          <ArrowRight className="w-4 h-4 group-hover:translate-x-2 transition-transform duration-300" />
+                        </>
+                      )}
+                    </div>
+                  </button>
                 ) : (
-                  <ArrowRight className="w-5 h-5 text-gray-600 group-hover:text-white transition-colors" />
+                  <button onClick={() => setShowPricingModal(true)} className="md:col-span-7 group relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#0c0612]/80 via-[#0a0510]/80 to-[#08080c]/80 border border-white/[0.05] hover:border-violet-500/20 transition-all duration-700 p-8 md:p-10 min-h-[280px] flex flex-col justify-between text-left">
+                    {/* Background Typography */}
+                    <div className="absolute -top-4 -right-4 text-[120px] md:text-[180px] font-black text-white/[0.05] leading-none tracking-tighter select-none pointer-events-none">
+                      COMPETE
+                    </div>
+
+                    <div className="relative z-10">
+                      <LockedBadge tier="enterprise" />
+
+                      <h3 className="text-4xl md:text-5xl lg:text-6xl font-black tracking-tight leading-[0.9] mb-4 mt-6">
+                        <span className="text-transparent bg-clip-text bg-gradient-to-r from-violet-400/80 to-purple-400/80">
+                          Competitive
+                        </span>
+                        <br />
+                        <span className="text-white/70">Analysis</span>
+                      </h3>
+
+                      <p className="text-sm text-gray-400 max-w-xs leading-relaxed">
+                        Deep market intelligence. Competitor mapping. Strategic opportunities.
+                      </p>
+                    </div>
+
+                    <div className="relative z-10 inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-gradient-to-r from-violet-600 to-purple-600 text-white font-semibold text-sm shadow-xl shadow-violet-500/20 group-hover:shadow-violet-500/40 group-hover:scale-[1.02] transition-all duration-300 w-fit">
+                      <Lock className="w-4 h-4" />
+                      <span>Unlock Feature</span>
+                    </div>
+                  </button>
                 )}
-              </button>
+
+                {/* Market Size - Vertical Typography Card (spans 5 cols) */}
+                {canAccess("enterprise") ? (
+                  <button
+                    onClick={handleCalculateMarketSize}
+                    disabled={isCalculatingMarket}
+                    className="md:col-span-5 group relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#061210] via-[#050f0d] to-[#08080c] border border-white/[0.08] hover:border-emerald-500/30 transition-all duration-700 p-8 min-h-[280px] flex flex-col justify-between text-left"
+                  >
+                    {/* Background Typography - Vertical */}
+                    <div className="absolute -bottom-8 -left-2 text-[100px] md:text-[140px] font-black text-white/[0.04] leading-none tracking-tighter select-none pointer-events-none rotate-90 origin-bottom-left">
+                      TAM
+                    </div>
+
+                    <div className="absolute top-0 right-0 w-[200px] h-[200px] bg-emerald-500/20 rounded-full blur-[100px] opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
+
+                    <div className="relative z-10">
+                      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-[10px] font-bold text-emerald-300 uppercase tracking-wider mb-6">
+                        Enterprise
+                      </span>
+
+                      <h3 className="text-3xl md:text-4xl font-black tracking-tight leading-[0.95] mb-3">
+                        <span className="text-transparent bg-clip-text bg-gradient-to-b from-emerald-300 to-teal-400">Market</span>
+                        <br />
+                        <span className="text-white/90">Size</span>
+                      </h3>
+
+                      <p className="text-xs text-gray-400 leading-relaxed">
+                        TAM • SAM • SOM
+                        <br />
+                        <span className="text-emerald-400">Real market data</span>
+                      </p>
+                    </div>
+
+                    <div className="relative z-10 flex items-center gap-2 text-emerald-300 group-hover:text-emerald-200 transition-colors">
+                      {isCalculatingMarket ? (
+                        <div className="w-4 h-4 border-2 border-emerald-400/30 border-t-emerald-400 rounded-full animate-spin" />
+                      ) : (
+                        <ArrowRight className="w-5 h-5 group-hover:translate-x-2 transition-transform duration-300" />
+                      )}
+                    </div>
+                  </button>
+                ) : (
+                  <button onClick={() => setShowPricingModal(true)} className="md:col-span-5 group relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#061210]/80 via-[#050f0d]/80 to-[#08080c]/80 border border-white/[0.05] hover:border-emerald-500/20 transition-all duration-700 p-8 min-h-[280px] flex flex-col justify-between text-left">
+                    <div className="absolute -bottom-8 -left-2 text-[100px] md:text-[140px] font-black text-white/[0.05] leading-none tracking-tighter select-none pointer-events-none rotate-90 origin-bottom-left">
+                      TAM
+                    </div>
+
+                    <div className="relative z-10">
+                      <LockedBadge tier="enterprise" />
+
+                      <h3 className="text-3xl md:text-4xl font-black tracking-tight leading-[0.95] mb-3 mt-6">
+                        <span className="text-transparent bg-clip-text bg-gradient-to-b from-emerald-400/80 to-teal-400/80">Market</span>
+                        <br />
+                        <span className="text-white/70">Size</span>
+                      </h3>
+
+                      <p className="text-xs text-gray-400 leading-relaxed">TAM • SAM • SOM</p>
+                    </div>
+
+                    <div className="relative z-10 inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-emerald-600 to-teal-600 text-white text-xs font-semibold shadow-lg shadow-emerald-500/20 w-fit">
+                      <Lock className="w-3 h-3" />
+                      <span>Unlock</span>
+                    </div>
+                  </button>
+                )}
+
+                {/* Brand Vibe - Wide Horizontal Card (spans 6 cols) */}
+                {canAccess("pro") ? (
+                  <button
+                    onClick={handleGenerateBrandVibe}
+                    disabled={isGeneratingVibe}
+                    className="md:col-span-6 group relative overflow-hidden rounded-3xl bg-gradient-to-r from-[#120610] via-[#0f050d] to-[#0a080c] border border-white/[0.08] hover:border-pink-500/30 transition-all duration-700 p-8 min-h-[160px] flex items-center justify-between text-left"
+                  >
+                    {/* Background Typography */}
+                    <div className="absolute top-1/2 -translate-y-1/2 -right-8 text-[80px] md:text-[100px] font-black text-white/[0.04] leading-none tracking-tighter select-none pointer-events-none">
+                      VIBE
+                    </div>
+
+                    <div className="absolute inset-0 bg-gradient-to-r from-pink-500/0 via-pink-500/5 to-rose-500/0 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+
+                    <div className="relative z-10 flex-1">
+                      <div className="flex items-center gap-3 mb-3">
+                        <h3 className="text-2xl md:text-3xl font-black tracking-tight">
+                          <span className="text-transparent bg-clip-text bg-gradient-to-r from-pink-300 to-rose-300">Brand Vibe</span>
+                        </h3>
+                        <span className="px-2 py-0.5 rounded-full bg-pink-500/10 border border-pink-500/20 text-[9px] font-bold text-pink-300 uppercase">Pro</span>
+                      </div>
+                      <p className="text-xs text-gray-400 group-hover:text-gray-300 transition-colors">Colors • Typography • Slogan • Aesthetic</p>
+                    </div>
+
+                    <div className="relative z-10">
+                      {isGeneratingVibe ? (
+                        <div className="w-10 h-10 border-2 border-pink-400/30 border-t-pink-400 rounded-full animate-spin" />
+                      ) : (
+                        <div className="w-12 h-12 rounded-2xl bg-white/[0.03] border border-white/10 flex items-center justify-center group-hover:bg-pink-500/10 group-hover:border-pink-500/30 transition-all duration-300">
+                          <ArrowRight className="w-5 h-5 text-gray-400 group-hover:text-pink-300 group-hover:translate-x-0.5 transition-all" />
+                        </div>
+                      )}
+                    </div>
+                  </button>
+                ) : (
+                  <button onClick={() => setShowPricingModal(true)} className="md:col-span-6 group relative overflow-hidden rounded-3xl bg-gradient-to-r from-[#120610]/80 via-[#0f050d]/80 to-[#0a080c]/80 border border-white/[0.05] hover:border-pink-500/20 transition-all duration-700 p-8 min-h-[160px] flex items-center justify-between text-left">
+                    <div className="absolute top-1/2 -translate-y-1/2 -right-8 text-[80px] md:text-[100px] font-black text-white/[0.05] leading-none tracking-tighter select-none pointer-events-none">
+                      VIBE
+                    </div>
+
+                    <div className="relative z-10 flex-1">
+                      <div className="flex items-center gap-3 mb-3">
+                        <h3 className="text-2xl md:text-3xl font-black tracking-tight text-white/70">Brand Vibe</h3>
+                        <LockedBadge tier="pro" />
+                      </div>
+                      <p className="text-xs text-gray-400">Colors • Typography • Slogan</p>
+                    </div>
+
+                    <div className="relative z-10 inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-pink-600 to-rose-600 text-white text-xs font-semibold shadow-lg shadow-pink-500/20">
+                      <Lock className="w-3 h-3" />
+                      <span>Unlock</span>
+                    </div>
+                  </button>
+                )}
+
+                {/* Tech Stack - Wide Horizontal Card (spans 6 cols) */}
+                {canAccess("pro") ? (
+                  <button
+                    onClick={handleRecommendTechStack}
+                    disabled={isRecommendingStack}
+                    className="md:col-span-6 group relative overflow-hidden rounded-3xl bg-gradient-to-r from-[#061215] via-[#050d10] to-[#0a0a0c] border border-white/[0.08] hover:border-cyan-500/30 transition-all duration-700 p-8 min-h-[160px] flex items-center justify-between text-left"
+                  >
+                    {/* Background Typography */}
+                    <div className="absolute top-1/2 -translate-y-1/2 -right-8 text-[80px] md:text-[100px] font-black text-white/[0.04] leading-none tracking-tighter select-none pointer-events-none">
+                      STACK
+                    </div>
+
+                    <div className="absolute inset-0 bg-gradient-to-r from-cyan-500/0 via-cyan-500/5 to-blue-500/0 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+
+                    <div className="relative z-10 flex-1">
+                      <div className="flex items-center gap-3 mb-3">
+                        <h3 className="text-2xl md:text-3xl font-black tracking-tight">
+                          <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 to-blue-300">Tech Stack</span>
+                        </h3>
+                        <span className="px-2 py-0.5 rounded-full bg-cyan-500/10 border border-cyan-500/20 text-[9px] font-bold text-cyan-300 uppercase">Pro</span>
+                      </div>
+                      <p className="text-xs text-gray-400 group-hover:text-gray-300 transition-colors">Frameworks • Tools • Architecture • Best practices</p>
+                    </div>
+
+                    <div className="relative z-10">
+                      {isRecommendingStack ? (
+                        <div className="w-10 h-10 border-2 border-cyan-400/30 border-t-cyan-400 rounded-full animate-spin" />
+                      ) : (
+                        <div className="w-12 h-12 rounded-2xl bg-white/[0.03] border border-white/10 flex items-center justify-center group-hover:bg-cyan-500/10 group-hover:border-cyan-500/30 transition-all duration-300">
+                          <ArrowRight className="w-5 h-5 text-gray-400 group-hover:text-cyan-300 group-hover:translate-x-0.5 transition-all" />
+                        </div>
+                      )}
+                    </div>
+                  </button>
+                ) : (
+                  <button onClick={() => setShowPricingModal(true)} className="md:col-span-6 group relative overflow-hidden rounded-3xl bg-gradient-to-r from-[#061215]/80 via-[#050d10]/80 to-[#0a0a0c]/80 border border-white/[0.05] hover:border-cyan-500/20 transition-all duration-700 p-8 min-h-[160px] flex items-center justify-between text-left">
+                    <div className="absolute top-1/2 -translate-y-1/2 -right-8 text-[80px] md:text-[100px] font-black text-white/[0.05] leading-none tracking-tighter select-none pointer-events-none">
+                      STACK
+                    </div>
+
+                    <div className="relative z-10 flex-1">
+                      <div className="flex items-center gap-3 mb-3">
+                        <h3 className="text-2xl md:text-3xl font-black tracking-tight text-white/70">Tech Stack</h3>
+                        <LockedBadge tier="pro" />
+                      </div>
+                      <p className="text-xs text-gray-400">Frameworks • Tools • Architecture</p>
+                    </div>
+
+                    <div className="relative z-10 inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-cyan-600 to-blue-600 text-white text-xs font-semibold shadow-lg shadow-cyan-500/20">
+                      <Lock className="w-3 h-3" />
+                      <span>Unlock</span>
+                    </div>
+                  </button>
+                )}
+              </div>
             </motion.div>
 
             {/* Brand Vibe Result */}
@@ -848,91 +1391,162 @@ function HomeContent() {
               <TechStackDisplay data={techStack} />
             )}
 
-            {/* AI Pivot Generator - Enhanced Style */}
-            <motion.div
-              className="md:col-span-4 macos-card p-0 mt-6 relative overflow-hidden group bg-gradient-to-br from-indigo-900/10 via-[#0a0510] to-[#050205] border-indigo-500/20"
-              initial={{ scale: 0.95, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              transition={{ delay: 1.2 }}
-            >
-              <div className="absolute top-0 right-0 p-32 bg-indigo-600/10 blur-[100px] rounded-full pointer-events-none" />
+            {/* AI Pivot Generator - Enterprise Feature */}
+            {canAccess("enterprise") ? (
+              <motion.div
+                className="md:col-span-4 macos-card p-0 mt-6 relative overflow-hidden group bg-gradient-to-br from-indigo-900/10 via-[#0a0510] to-[#050205] border-indigo-500/20"
+                initial={{ scale: 0.95, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                transition={{ delay: 1.2 }}
+              >
+                <div className="absolute top-0 right-0 p-32 bg-indigo-600/10 blur-[100px] rounded-full pointer-events-none" />
 
-              <div className="p-6 md:p-8 relative z-10">
-                <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6 mb-6">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-3 mb-4">
-                      <div className="w-8 h-8 rounded-lg bg-indigo-500/20 flex items-center justify-center border border-indigo-500/30">
-                        <Sparkles className="w-4 h-4 text-indigo-300" />
+                <div className="p-6 md:p-8 relative z-10">
+                  <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6 mb-6">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-3 mb-4">
+                        <div className="w-8 h-8 rounded-lg bg-indigo-500/20 flex items-center justify-center border border-indigo-500/30">
+                          <Sparkles className="w-4 h-4 text-indigo-300" />
+                        </div>
+                        <span className="text-xs font-bold text-indigo-400 uppercase tracking-widest">
+                          Valueshift Engine v2
+                        </span>
                       </div>
-                      <span className="text-xs font-bold text-indigo-400 uppercase tracking-widest">
-                        Valueshift Engine v2
-                      </span>
+
+                      <h2 className="text-2xl md:text-3xl font-bold text-white mb-2 tracking-tight">
+                        {pivot ? "Strategic Pivot Opportunity" : "Hit a Wall? Pivot Instantly."}
+                      </h2>
+
+                      {!pivot && (
+                        <p className="text-gray-400 text-sm max-w-lg leading-relaxed">
+                          Our AI analyzes 2024-25 market gaps to restructure your core idea into a high-growth venture.
+                        </p>
+                      )}
                     </div>
 
-                    <h2 className="text-2xl md:text-3xl font-bold text-white mb-2 tracking-tight">
-                      {pivot ? "Strategic Pivot Opportunity" : "Hit a Wall? Pivot Instantly."}
-                    </h2>
-
-                    {!pivot && (
-                      <p className="text-gray-400 text-sm max-w-lg leading-relaxed">
-                        Our AI analyzes 2024-25 market gaps to restructure your core idea into a high-growth venture.
-                      </p>
-                    )}
+                    <div className="flex-shrink-0">
+                      <button
+                        onClick={handlePivot}
+                        disabled={isPivoting}
+                        className="liquid-button bg-indigo-600 hover:bg-indigo-500 text-white border-indigo-500/50 px-6 py-3 flex items-center gap-2 shadow-[0_0_30px_rgba(79,70,229,0.2)]"
+                      >
+                        <RefreshCw className={clsx("w-4 h-4", isPivoting && "animate-spin")} />
+                        {isPivoting ? "Analyzing Markets..." : pivot ? "Generate New Angle" : "Generate Pivot Strategy"}
+                      </button>
+                    </div>
                   </div>
 
-                  <div className="flex-shrink-0">
-                    <button
-                      onClick={handlePivot}
-                      disabled={isPivoting}
-                      className="liquid-button bg-indigo-600 hover:bg-indigo-500 text-white border-indigo-500/50 px-6 py-3 flex items-center gap-2 shadow-[0_0_30px_rgba(79,70,229,0.2)]"
+                  {pivot && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-6 border-t border-white/5"
                     >
-                      <RefreshCw className={clsx("w-4 h-4", isPivoting && "animate-spin")} />
-                      {isPivoting ? "Analyzing Markets..." : pivot ? "Generate New Angle" : "Generate Pivot Strategy"}
-                    </button>
+                      {/* 1. New Concept */}
+                      <div className="md:col-span-2 space-y-3">
+                        <h3 className="text-xs font-semibold text-indigo-300 uppercase tracking-wider">The New Concept</h3>
+                        <p className="text-xl md:text-2xl text-white font-medium leading-relaxed">
+                          "{pivot.pivotConcept}"
+                        </p>
+                        <p className="text-sm text-gray-400 border-l-2 border-indigo-500/30 pl-3">
+                          <span className="text-gray-500">Shift:</span> {pivot.targetAudienceShift}
+                        </p>
+                      </div>
+
+                      {/* 2. Why It Works */}
+                      <div className="md:col-span-1 bg-indigo-950/20 rounded-xl p-5 border border-indigo-500/10">
+                        <h3 className="text-xs font-semibold text-green-400 uppercase tracking-wider mb-2 flex items-center gap-2">
+                          <TrendingUp className="w-3 h-3" /> Market Logic
+                        </h3>
+                        <p className="text-sm text-gray-300 leading-relaxed">
+                          {pivot.whyItWorks}
+                        </p>
+
+                        <div className="mt-4 pt-4 border-t border-white/5 flex justify-between items-center">
+                          <span className="text-[10px] text-gray-500 uppercase">Complexity</span>
+                          <span className={clsx(
+                            "text-xs font-bold px-2 py-0.5 rounded",
+                            pivot.complexityScore === 'Low' ? "bg-green-500/10 text-green-400" :
+                              pivot.complexityScore === 'Medium' ? "bg-yellow-500/10 text-yellow-400" : "bg-red-500/10 text-red-400"
+                          )}>
+                            {pivot.complexityScore}
+                          </span>
+                        </div>
+                      </div>
+                    </motion.div>
+                  )}
+                </div>
+              </motion.div>
+            ) : (
+              <motion.div
+                className="md:col-span-4 mt-6 relative overflow-hidden rounded-2xl"
+                initial={{ scale: 0.95, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                transition={{ delay: 1.2 }}
+              >
+                {/* Blurred Preview */}
+                <div
+                  className="macos-card p-0 bg-gradient-to-br from-indigo-900/10 via-[#0a0510] to-[#050205] border-indigo-500/20"
+                  style={{ filter: 'blur(6px)' }}
+                >
+                  <div className="p-6 md:p-8">
+                    <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6 mb-6">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-3 mb-4">
+                          <div className="w-8 h-8 rounded-lg bg-indigo-500/20 flex items-center justify-center border border-indigo-500/30">
+                            <Sparkles className="w-4 h-4 text-indigo-300" />
+                          </div>
+                          <span className="text-xs font-bold text-indigo-400 uppercase tracking-widest">
+                            Valueshift Engine v2
+                          </span>
+                        </div>
+                        <h2 className="text-2xl md:text-3xl font-bold text-white mb-2 tracking-tight">
+                          Hit a Wall? Pivot Instantly.
+                        </h2>
+                        <p className="text-gray-400 text-sm max-w-lg leading-relaxed">
+                          Our AI analyzes 2024-25 market gaps to restructure your core idea into a high-growth venture.
+                        </p>
+                      </div>
+                    </div>
                   </div>
                 </div>
 
-                {pivot && (
+                {/* Locked Overlay */}
+                <div className="absolute inset-0 flex flex-col items-center justify-center p-6 backdrop-blur-sm bg-gradient-to-b from-black/40 via-black/60 to-black/80 rounded-2xl">
+                  <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-purple-500/20 rounded-full blur-3xl pointer-events-none" />
+
                   <motion.div
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-6 border-t border-white/5"
+                    initial={{ scale: 0.8, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    className="relative w-16 h-16 rounded-2xl bg-gradient-to-br from-purple-600 to-pink-600 flex items-center justify-center mb-4 shadow-lg shadow-purple-500/30"
                   >
-                    {/* 1. New Concept */}
-                    <div className="md:col-span-2 space-y-3">
-                      <h3 className="text-xs font-semibold text-indigo-300 uppercase tracking-wider">The New Concept</h3>
-                      <p className="text-xl md:text-2xl text-white font-medium leading-relaxed">
-                        "{pivot.pivotConcept}"
-                      </p>
-                      <p className="text-sm text-gray-400 border-l-2 border-indigo-500/30 pl-3">
-                        <span className="text-gray-500">Shift:</span> {pivot.targetAudienceShift}
-                      </p>
-                    </div>
-
-                    {/* 2. Why It Works */}
-                    <div className="md:col-span-1 bg-indigo-950/20 rounded-xl p-5 border border-indigo-500/10">
-                      <h3 className="text-xs font-semibold text-green-400 uppercase tracking-wider mb-2 flex items-center gap-2">
-                        <TrendingUp className="w-3 h-3" /> Market Logic
-                      </h3>
-                      <p className="text-sm text-gray-300 leading-relaxed">
-                        {pivot.whyItWorks}
-                      </p>
-
-                      <div className="mt-4 pt-4 border-t border-white/5 flex justify-between items-center">
-                        <span className="text-[10px] text-gray-500 uppercase">Complexity</span>
-                        <span className={clsx(
-                          "text-xs font-bold px-2 py-0.5 rounded",
-                          pivot.complexityScore === 'Low' ? "bg-green-500/10 text-green-400" :
-                            pivot.complexityScore === 'Medium' ? "bg-yellow-500/10 text-yellow-400" : "bg-red-500/10 text-red-400"
-                        )}>
-                          {pivot.complexityScore}
-                        </span>
-                      </div>
-                    </div>
+                    <Lock className="w-7 h-7 text-white" />
                   </motion.div>
-                )}
-              </div>
-            </motion.div>
+
+                  <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-gradient-to-r from-purple-600 to-pink-600 text-white text-xs font-bold uppercase tracking-wider mb-3 shadow-md">
+                    <Crown size={12} />
+                    Enterprise Feature
+                  </div>
+
+                  <h4 className="text-white text-lg font-bold text-center mb-1">
+                    Unlock Pivot Strategies
+                  </h4>
+
+                  <p className="text-white/70 text-sm text-center mb-5 max-w-xs">
+                    Get AI-powered pivot suggestions to transform your idea into a high-growth venture.
+                  </p>
+
+                  <button
+                    onClick={() => setShowPricingModal(true)}
+                    className="group relative inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-purple-600 to-pink-600 text-white font-semibold text-sm shadow-lg shadow-purple-500/30 hover:shadow-purple-500/50 hover:scale-105 active:scale-95 transition-all duration-300"
+                  >
+                    <Sparkles size={16} className="group-hover:rotate-12 transition-transform" />
+                    Unlock with Enterprise
+                    <span className="text-white/70 text-xs ml-1">(₹99/mo)</span>
+                  </button>
+                </div>
+              </motion.div>
+            )}
 
 
 
@@ -1103,6 +1717,9 @@ function HomeContent() {
 
       {/* Onboarding Tutorial */}
       <OnboardingTutorial />
+
+      {/* Pricing Modal - Opens as overlay when locked features are clicked */}
+      <PricingModal isOpen={showPricingModal} onClose={() => setShowPricingModal(false)} />
     </main>
   );
 }

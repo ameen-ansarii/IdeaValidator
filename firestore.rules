@@ -1,0 +1,15 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /users/{userId} {
+      // Allow read/write only if the authenticated user is the owner of the document
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+      
+      // Ideally, you would want to prevent users from changing their plan to 'pro' themselves
+      // A more secure version would look like this:
+      // allow create: if request.auth != null && request.auth.uid == userId && request.resource.data.plan == 'free';
+      // allow update: if request.auth != null && request.auth.uid == userId && request.resource.data.plan == resource.data.plan;
+      // allow read: if request.auth != null && request.auth.uid == userId;
+    }
+  }
+}

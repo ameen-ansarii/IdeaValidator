@@ -17,21 +17,91 @@ const getGroq = () => {
     });
 };
 
+import { searchWeb } from "./utils/search";
+
 export async function validateIdea(idea: string, mode: "default" | "roast" = "default"): Promise<ValidationReport> {
     const client = getGroq();
 
+    // 1. Perform Real-Time Search (The "Brain" part)
+    console.log("🔍 Searching web for:", idea);
+
+    // Search queries: Focus on NEWS and REPORTS, not just competitor homepages
+    const searchQueries = [
+        `${idea} industry news trends 2025 2026`,
+        `${idea} market report analysis`,
+        `future of ${idea} startup landscape 2026`
+    ];
+
+    // Run searches in parallel (if we had multiple) - for now just one robust one
+    const searchResults = await searchWeb(`${idea} industry news market trends competitors 2025 2026`);
+
+    // Format context for the LLM
+    const contextString = searchResults.map(r =>
+        `[Source: ${r.title}](${r.url}): ${r.content.substring(0, 200)}...`
+    ).join("\n\n");
+
+    console.log("✅ Search complete. Context length:", contextString.length);
+
     let systemPrompt = `You are an expert startup analyst and product validator. 
 Your task is to provide a strict, realistic, non-motivational evaluation of a startup idea.
+
+IMPORTANT: You have access to REAL-TIME SEARCH CONTEXT below. 
+You MUST use this context to cite REAL competitors and REAL market trends. 
+Do not hallucinate. If the search results show a competitor, list them.
+
+---
+REAL-TIME MARKET CONTEXT:
+${contextString || "No specific search results found. Rely on your general knowledge."}
+---
 
 Rules:
 - Avoid hype, encouragement, or emotional language.
 - Be blunt but constructive.
 - If the idea is weak, clearly say so.
 - Do not give legal or financial advice.
+- CITATIONS: When you mention a fact or competitor from the context, try to include the URL or Source Name.
 
 You MUST respond with ONLY a valid JSON object matching this exact schema:
 {
   "summary": "string",
+  "targetUsers": "string",
+  "problemSeverity": number (1-10),
+  "severityJustification": "string",
+  "marketDemand": "string (High/Medium/Low)",
+  "demandJustification": "string",
+  "monetizationPaths": ["string"],
+  "alternatives": ["string (Real competitors found in search)"],
+  "risks": "string",
+  "mvpScope": "string",
+  "verdict": "string (Promising/Questionable/Weak)",
+  "verdictJustification": "string",
+  "viabilityScore": number (0-100),
+  "confidenceJustification": "string",
+  "whyItFails": "string",
+  "whoShouldNotBuild": "string",
+  "marketTrends": "string (Specific 2025-26 market shifts relevant to this)",
+  "sources": ["string (Format: 'Article Headline: URL' - Do NOT list competitor homepages here, only news/blogs/reports)"]
+}`;
+
+    if (mode === 'roast') {
+        systemPrompt = `You are a savage, cynical, witty, and brutally honest startup validator (ROAST MODE ACTIVE).
+Your task is to provide a strict, realistic evaluation, but wrapped in top-tier sarcasm, internet culture references, and dark humor.
+
+---
+REAL-TIME CONTEXT (Use this to roast them accurately):
+${contextString}
+---
+
+Rules:
+- ⚡ USE SIMPLE LANGUAGE: Write like a savvy Twitter/X user.
+- Be Witty & Sarcastic: Use modern internet slang.
+- Be Brutally Honest: If the idea has a competitor (check context), MOCK THEM for copying.
+- One-Liners: Use short, cutting sentences.
+- ACCURACY IS KEY: The ratings must be real. The roast must be based on facts (e.g. "You're building another To-Do app in 2025?").
+
+You MUST respond with ONLY a valid JSON object matching this exact schema:
+{
+  "summary": "string (A short, stinging paragraph roasting the concept)",
   "targetUsers": "string",
   "problemSeverity": number (1-10),
   "severityJustification": "string",
@@ -43,54 +113,18 @@ You MUST respond with ONLY a valid JSON object matching this exact schema:
   "mvpScope": "string",
   "verdict": "string (Promising/Questionable/Weak)",
   "verdictJustification": "string",
-  "confidenceScore": "string (1-10)",
-  "confidenceJustification": "string",
-  "whyItFails": "string",
-  "whyItFails": "string",
-  "whoShouldNotBuild": "string",
-  "marketTrends": "string (Specific 2025-26 market shifts relevant to this)",
-  "sources": ["string (Specific Trusted Sites with URLs if possible, e.g. 'TechCrunch: AI Trends 2025', 'Gartner: GenAI Report', 'Y Combinator RFS')"]
-}`;
-
-    if (mode === 'roast') {
-        systemPrompt = `You are a savage, cynical, witty, and brutally honest startup validator (ROAST MODE ACTIVE).
-Your task is to provide a strict, realistic evaluation, but wrapped in top-tier sarcasm, internet culture references, and dark humor.
-
-Rules:
-- ⚡ USE SIMPLE LANGUAGE: Write like a savvy Twitter/X user or a direct friend. No academic words. No complex jargon. Keep it punchy.
-- Be Witty & Sarcastic: Use modern internet slang (e.g., "vaporware", "mid", "touch grass", "skill issue").
-- Be Brutally Honest: If the idea sucks, say it sucks. Don't sugarcoat.
-- One-Liners: Use short, cutting sentences.
-- ACCURACY IS KEY: Even though you are roasting, the *ratings* (score, demand, etc.) must be realistic based on market data. Rate it accurately, but describe it with sass.
-- NO BOOMER TALK: Do not sound like a corporate robot trying to be funny. Sound like a real internet native.
-
-You MUST respond with ONLY a valid JSON object matching this exact schema:
-{
-  "summary": "string (A short, stinging paragraph roasting the concept - keep it simple and savage)",
-  "targetUsers": "string",
-  "problemSeverity": number (1-10),
-  "severityJustification": "string (Why this problem doesn't matter)",
-  "marketDemand": "string (High/Medium/Low)",
-  "demandJustification": "string (Why no one wants this)",
-  "monetizationPaths": ["string"],
-  "alternatives": ["string"],
-  "risks": "string",
-  "mvpScope": "string",
-  "verdict": "string (Promising/Questionable/Weak)",
-  "verdictJustification": "string",
-  "confidenceScore": "string (1-10)",
+  "viabilityScore": number (0-100),
   "confidenceJustification": "string",
   "whyItFails": "string",
   "whoShouldNotBuild": "string",
   "roast": {
-    "summary": "Full roast paragraph (simple english, savage tone)",
-    "sarcasticVerdict": "Funny title (e.g., 'Tinder for Rocks')",
-    "humorousAnalogy": "Analogy (e.g., 'Like Uber but for people who hate themselves')",
-    "burn": "Savage one-liner (under 15 words)"
-  }
+    "summary": "Full roast paragraph",
+    "sarcasticVerdict": "Funny title",
+    "humorousAnalogy": "Analogy",
+    "burn": "Savage one-liner"
   },
-  "marketTrends": "string (The current 2025-26 wave this is missing or riding)",
-  "sources": ["string (Real 2025 trends/articles/URLs to back this up)"]
+  "marketTrends": "string",
+  "sources": ["string (Format: 'Article Headline: URL' - Do NOT list competitor homepages here, only news/blogs/reports)"]
 }`;
     }
 
@@ -110,7 +144,6 @@ You MUST respond with ONLY a valid JSON object matching this exact schema:
 
         console.log("✅ Received response from Groq");
         const response = completion.choices[0]?.message?.content || "";
-        console.log("📝 Response preview:", response.substring(0, 100));
 
         // Clean up markdown code blocks if present
         const cleanContent = response.replace(/```json\n?|\n?```/g, "").trim();
@@ -120,12 +153,17 @@ You MUST respond with ONLY a valid JSON object matching this exact schema:
         }
 
         const parsed = JSON.parse(cleanContent) as ValidationReport;
+
+        // Fallback: If AI didn't fill sources but we found some, inject them
+        if ((!parsed.sources || parsed.sources.length === 0) && searchResults.length > 0) {
+            parsed.sources = searchResults.slice(0, 3).map(r => r.title + ": " + r.url);
+        }
+
         console.log("✅ Successfully parsed JSON response");
         return parsed;
     } catch (error: any) {
         console.error("❌ Groq Validation Error:");
         console.error("Error message:", error.message);
-        console.error("Error details:", error.response?.data || error);
         throw new Error(`Validation failed: ${error.message || "Unknown error"}`);
     }
 }
@@ -240,11 +278,23 @@ You MUST respond with ONLY a valid JSON array in this exact format:
 export async function analyzeCompetitors(idea: string) {
     const client = getGroq();
 
+    // 1. Search for REAL competitors
+    const searchResults = await searchWeb(`${idea} competitors alternatives market share 2025 2026`);
+    const contextString = searchResults.map(r =>
+        `[Source: ${r.title}](${r.url}): ${r.content}`
+    ).join("\n\n");
+
     const systemPrompt = `You are a market research analyst and competitive intelligence expert.
 Analyze the competitive landscape for this startup idea.
 
-IMPORTANT: You must attempt to identify REAL, EXISTING competitors and provide their actual Website URLs.
+IMPORTANT: Use the REAL-TIME CONTEXT below to identify actual existing companies.
+If the context lists competitors, YOU MUST INCLUDE THEM.
 If you cannot find a specific URL, leave the field empty string "".
+
+---
+REAL-TIME CONTEXT:
+${contextString}
+---
 
 You MUST respond with ONLY a valid JSON object in this exact format:
 {
@@ -286,15 +336,29 @@ You MUST respond with ONLY a valid JSON object in this exact format:
 export async function calculateMarketSize(idea: string) {
     const client = getGroq();
 
+    // 1. Search for Market Data
+    const searchResults = await searchWeb(`${idea} market size tam sam som report 2025 2026`);
+    const contextString = searchResults.map(r =>
+        `[Source: ${r.title}](${r.url}): ${r.content}`
+    ).join("\n\n");
+
     const systemPrompt = `You are a venture capital analyst and market sizing expert.
 Calculate TAM, SAM, SOM and revenue projections for this startup idea.
+
+IMPORTANT: Use the REAL-TIME CONTEXT below to find actual market numbers (in Billions/Millions).
+If the context has specific numbers (e.g. "The Global AI market is $196B"), USE THEM.
+
+---
+REAL-TIME CONTEXT:
+${contextString}
+---
 
 You MUST respond with ONLY a valid JSON object in this exact format:
 {
   "tam": "$10B",
   "sam": "$1B",
   "som": "$50M",
-  "tamJustification": "Explanation of total addressable market calculation",
+  "tamJustification": "Explanation of total addressable market calculation (cite sources if available)",
   "samJustification": "Explanation of serviceable addressable market",
   "somJustification": "Explanation of serviceable obtainable market",
   "revenueProjection": {
