@@ -132,7 +132,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     const isPro = userData?.plan === "pro";
 
     return (
-        <AuthContext.Provider value={{ user, userData, loading, signInWithGoogle, signOut, isPro }}>
+        <AuthContext.Provider value={{ user, userData, loading, signInWithGoogle, signInWithEmail, signUpWithEmail, signOut, isPro }}>
             {children}
         </AuthContext.Provider>
     );
