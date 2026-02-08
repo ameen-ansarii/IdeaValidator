@@ -1,13 +1,13 @@
 "use client";
 
 import { useAuth } from "../context/AuthContext";
-import { User, LogOut, Crown, Mail, Loader2, X } from "lucide-react";
+import { User, LogOut, Crown, Rocket, Mail, Loader2, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useState } from "react";
 import PricingModal from "./PricingModal";
 
 export default function UserAuth() {
-    const { user, userData, signInWithGoogle, signInWithEmail, signUpWithEmail, signOut, loading, isPro } = useAuth();
+    const { user, userData, signInWithGoogle, signInWithEmail, signUpWithEmail, signOut, loading, isPro, isEnterprise } = useAuth();
     
     // UI States
     const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -194,9 +194,9 @@ export default function UserAuth() {
                 <div className="flex flex-col items-start leading-none">
                     <span className="text-xs font-bold text-white max-w-[80px] truncate">{user.displayName || "User"}</span>
                     <span className={`text-[10px] uppercase font-bold tracking-wider ${
-                        isPro ? "text-yellow-400" : "text-gray-300"
+                        isEnterprise ? "text-purple-400" : isPro ? "text-yellow-400" : "text-gray-300"
                     }`}>
-                        {isPro ? "PRO" : "FREE"}
+                        {isEnterprise ? "ENTERPRISE" : isPro ? "PRO" : "FREE"}
                     </span>
                 </div>
             </motion.button>
@@ -213,14 +213,16 @@ export default function UserAuth() {
                         <div className="px-4 py-3 border-b border-gray-100 dark:border-gray-800">
                            <p className="text-xs text-gray-500 dark:text-gray-400">Current Plan</p>
                            <div className="flex items-center gap-2 mt-1">
-                                {isPro ? <Crown size={14} className="text-yellow-500" /> : <div className="w-3.5 h-3.5 rounded-full bg-gray-400"/>}
-                                <span className={`font-bold text-sm ${isPro ? "text-yellow-600 dark:text-yellow-400" : "text-gray-700 dark:text-gray-300"}`}>
-                                    {isPro ? "Pro Member" : "Free Tier"}
+                                {isEnterprise ? <Rocket size={14} className="text-purple-500" /> : isPro ? <Crown size={14} className="text-yellow-500" /> : <div className="w-3.5 h-3.5 rounded-full bg-gray-400"/>}
+                                <span className={`font-bold text-sm ${
+                                    isEnterprise ? "text-purple-600 dark:text-purple-400" : isPro ? "text-yellow-600 dark:text-yellow-400" : "text-gray-700 dark:text-gray-300"
+                                }`}>
+                                    {isEnterprise ? "Enterprise" : isPro ? "Pro Member" : "Free Tier"}
                                 </span>
                            </div>
                         </div>
 
-                        {!isPro && (
+                        {!isPro && !isEnterprise && (
                             <div className="p-2">
                                 <button 
                                     onClick={() => {

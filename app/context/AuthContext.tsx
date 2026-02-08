@@ -9,13 +9,14 @@ import {
     signInWithEmailAndPassword,
     updateProfile,
     signOut as firebaseSignOut,
-    onAuthStateChanged
+    onAuthStateChanged,
+    Unsubscribe
 } from "firebase/auth";
-import { doc, getDoc, setDoc, serverTimestamp } from "firebase/firestore";
+import { doc, getDoc, setDoc, serverTimestamp, onSnapshot, Unsubscribe as FirestoreUnsubscribe } from "firebase/firestore";
 import { auth, db } from "../utils/firebase";
 
 // User specific data type
-export type UserPlan = "free" | "pro";
+export type UserPlan = "free" | "pro" | "enterprise";
 
 interface UserData {
     uid: string;
@@ -35,6 +36,7 @@ interface AuthContextType {
     signUpWithEmail: (email: string, pass: string, name: string) => Promise<void>;
     signOut: () => Promise<void>;
     isPro: boolean;
+    isEnterprise: boolean;
 }
 
 const AuthContext = createContext<AuthContextType>({
@@ -46,6 +48,7 @@ const AuthContext = createContext<AuthContextType>({
     signUpWithEmail: async () => { },
     signOut: async () => { },
     isPro: false,
+    isEnterprise: false,
 });
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
@@ -54,37 +57,56 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
-            setLoading(true);
+        let authUnsub: Unsubscribe;
+        let firestoreUnsub: FirestoreUnsubscribe | null = null;
+
+        authUnsub = onAuthStateChanged(auth, async (currentUser) => {
+            // Cleanup previous firestore listener if any
+            if (firestoreUnsub) {
+                firestoreUnsub();
+                firestoreUnsub = null;
+            }
+
             if (currentUser) {
                 setUser(currentUser);
-                // Check if user document exists in Firestore
-                const userRef = doc(db, "users", currentUser.uid);
-                const userSnap = await getDoc(userRef);
+                setLoading(true);
 
-                if (userSnap.exists()) {
-                    setUserData(userSnap.data() as UserData);
-                } else {
-                    // Create new user document with default "free" plan
-                    const newUserData: UserData = {
-                        uid: currentUser.uid,
-                        email: currentUser.email,
-                        displayName: currentUser.displayName,
-                        photoURL: currentUser.photoURL,
-                        plan: "free",
-                        createdAt: serverTimestamp(),
-                    };
-                    await setDoc(userRef, newUserData);
-                    setUserData(newUserData);
-                }
+                const userRef = doc(db, "users", currentUser.uid);
+
+                // Subscribe to real-time updates
+                firestoreUnsub = onSnapshot(userRef, (docSnap) => {
+                    if (docSnap.exists()) {
+                        setUserData(docSnap.data() as UserData);
+                    } else {
+                        // Create new user document with default "free" plan
+                        const newUserData: UserData = {
+                            uid: currentUser.uid,
+                            email: currentUser.email,
+                            displayName: currentUser.displayName,
+                            photoURL: currentUser.photoURL,
+                            plan: "free",
+                            createdAt: serverTimestamp(),
+                        };
+                        setDoc(userRef, newUserData).catch(err => console.error("Error creating user profile:", err));
+                        setUserData(newUserData);
+                    }
+                    setLoading(false);
+                }, (error) => {
+                    console.error("Error fetching user data:", error);
+                    setLoading(false);
+                });
+
             } else {
                 setUser(null);
                 setUserData(null);
+                setLoading(false);
             }
-            setLoading(false);
         });
 
-        return () => unsubscribe();
+        return () => {
+            if (authUnsub) authUnsub();
+            if (firestoreUnsub) firestoreUnsub();
+        };
     }, []);
 
     const signInWithGoogle = async () => {
@@ -129,10 +151,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         }
     };
 
-    const isPro = userData?.plan === "pro";
+    const isEnterprise = userData?.plan?.trim().toLowerCase() === "enterprise";
+    // Pro features are available to both pro and enterprise users
+    const isPro = userData?.plan?.trim().toLowerCase() === "pro" || isEnterprise;
 
     return (
-        <AuthContext.Provider value={{ user, userData, loading, signInWithGoogle, signInWithEmail, signUpWithEmail, signOut, isPro }}>
+        <AuthContext.Provider value={{ user, userData, loading, signInWithGoogle, signInWithEmail, signUpWithEmail, signOut, isPro, isEnterprise }}>
             {children}
         </AuthContext.Provider>
     );

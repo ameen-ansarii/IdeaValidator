@@ -3,6 +3,7 @@
 import { motion } from "framer-motion";
 import { Lock, Crown, Rocket, Sparkles } from "lucide-react";
 import Link from "next/link";
+import { useAuth } from "../context/AuthContext";
 
 interface LockedFeatureProps {
     children: React.ReactNode;
@@ -25,13 +26,18 @@ export default function LockedFeature({
     blurAmount = 8,
     showPreview = true,
 }: LockedFeatureProps) {
-    const isPro = tier === "pro";
-    const Icon = isPro ? Crown : Rocket;
-    const tierName = isPro ? "Pro" : "Enterprise";
-    const price = isPro ? "₹49" : "₹99";
-    const gradientFrom = isPro ? "from-indigo-600" : "from-purple-600";
-    const gradientTo = isPro ? "to-purple-600" : "to-pink-600";
-    const glowColor = isPro ? "indigo" : "purple";
+    const { isPro, isEnterprise } = useAuth();
+    
+    // Unlock logic
+    if (tier === "pro" && isPro) return <>{children}</>;
+    if (tier === "enterprise" && isEnterprise) return <>{children}</>;
+
+    const Icon = tier === "pro" ? Crown : Rocket;
+    const tierName = tier === "pro" ? "Pro" : "Enterprise";
+    const price = tier === "pro" ? "₹49" : "₹99";
+    const gradientFrom = tier === "pro" ? "from-indigo-600" : "from-purple-600";
+    const gradientTo = tier === "pro" ? "to-purple-600" : "to-pink-600";
+    const glowColor = tier === "pro" ? "indigo" : "purple";
 
     return (
         <div className={`relative overflow-hidden rounded-2xl ${className}`}>
